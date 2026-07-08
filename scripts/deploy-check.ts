@@ -1,0 +1,151 @@
+/**
+ * Pre-deploy checklist — validates required environment variables.
+ *
+ * Usage:
+ *   npx tsx scripts/deploy-check.ts
+ *   npx tsx scripts/deploy-check.ts --production
+ */
+
+import { config } from "dotenv";
+import { isGoogleAuthConfigured } from "../src/lib/google-auth";
+import { isMapboxConfigured, verifyMapboxToken } from "../src/lib/mapbox";
+import {
+  isEmailConfigured,
+  isSmsConfigured,
+} from "../src/lib/notifications";
+import { isSupabaseStorageConfigured } from "../src/lib/supabase-storage";
+
+config({ path: ".env" });
+
+const isProduction = process.argv.includes("--production");
+
+type Check = {
+  name: string;
+  ok: boolean;
+  required: boolean;
+  note?: string;
+};
+
+function has(name: string) {
+  return Boolean(process.env[name]?.trim());
+}
+
+function checkStripe() {
+  return (
+    has("STRIPE_SECRET_KEY") &&
+    has("STRIPE_WEBHOOK_SECRET") &&
+    has("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY") &&
+    has("STRIPE_PRICE_STANDARD") &&
+    has("STRIPE_PRICE_FEATURED")
+  );
+}
+
+async function main() {
+  const checks: Check[] = [
+    {
+      name: "DATABASE_URL",
+      ok: has("DATABASE_URL"),
+      required: true,
+    },
+    {
+      name: "DIRECT_URL",
+      ok: has("DIRECT_URL"),
+      required: true,
+    },
+    {
+      name: "NEXTAUTH_URL",
+      ok: has("NEXTAUTH_URL"),
+      required: true,
+      note: isProduction
+        ? "Set to your production domain, e.g. https://pawpath.com"
+        : undefined,
+    },
+    {
+      name: "NEXTAUTH_SECRET",
+      ok: has("NEXTAUTH_SECRET"),
+      required: true,
+    },
+    {
+      name: "Supabase storage",
+      ok: isSupabaseStorageConfigured(),
+      required: true,
+    },
+    {
+      name: "Stripe billing",
+      ok: checkStripe(),
+      required: true,
+      note: isProduction
+        ? "Use live keys + production webhook endpoint"
+        : undefined,
+    },
+    {
+      name: "Resend email",
+      ok: isEmailConfigured(),
+      required: true,
+    },
+    {
+      name: "Google sign-in",
+      ok: isGoogleAuthConfigured(),
+      required: false,
+    },
+    {
+      name: "Mapbox map",
+      ok: isMapboxConfigured(),
+      required: false,
+    },
+    {
+      name: "Twilio SMS",
+      ok: isSmsConfigured(),
+      required: false,
+    },
+  ];
+
+  console.log(
+    `\nPawPath deploy check${isProduction ? " (production)" : " (local)"}\n`
+  );
+
+  let failedRequired = 0;
+
+  for (const check of checks) {
+    const status = check.ok ? "ok" : check.required ? "MISSING" : "optional";
+    console.log(`[${status}] ${check.name}${check.note ? ` — ${check.note}` : ""}`);
+    if (!check.ok && check.required) failedRequired++;
+  }
+
+  if (isMapboxConfigured()) {
+    try {
+      const place = await verifyMapboxToken(
+        process.env.NEXT_PUBLIC_MAPBOX_TOKEN!
+      );
+      console.log(`\nMapbox geocode test: ${place}`);
+    } catch (error) {
+      console.log(
+        `\nMapbox token failed verification: ${
+          error instanceof Error ? error.message : error
+        }`
+      );
+      failedRequired++;
+    }
+  }
+
+  console.log("\nProduction reminders:");
+  console.log("- Vercel env vars for all required items above");
+  console.log("- Stripe webhook: https://YOUR_DOMAIN/api/billing/webhook");
+  console.log(
+    "- Google OAuth redirect: https://YOUR_DOMAIN/api/auth/callback/google"
+  );
+  console.log("- Resend: verify your domain and update EMAIL_FROM");
+  console.log("- Run: npm run build\n");
+
+  if (failedRequired > 0) {
+    console.error(`${failedRequired} required check(s) failed.\n`);
+    process.exit(1);
+  }
+
+  console.log("Required checks passed.\n");
+}
+
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+});
