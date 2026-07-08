@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { DisclaimerBanner } from "@/components/legal/disclaimer-banner";
 import { EditorialBand } from "@/components/visual/editorial-band";
+import { PhotoHero } from "@/components/visual/photo-hero";
 import { LISTING_TIERS } from "@/lib/constants";
 import { SITE_IMAGES } from "@/lib/site-images";
 import { Check } from "lucide-react";
@@ -8,22 +9,27 @@ import { Check } from "lucide-react";
 export default function ForWalkersPage() {
   return (
     <>
-      <div className="hero-band border-b border-sand-200/50">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-          <p className="section-label">For dog walkers</p>
-          <h1 className="headline-lg mt-3 max-w-2xl">
-            Get discovered locally — without giving up 20% of every walk.
-          </h1>
-          <p className="body-lg mt-4 max-w-xl">
-            PawPath is a listing platform, not a booking middleman. Owners find
-            you, message you, and pay you directly. You invest in visibility —
-            not transaction fees.
-          </p>
-          <Button href="/signup?role=walker" size="lg" className="mt-8">
-            Create your listing
-          </Button>
-        </div>
-      </div>
+      <PhotoHero
+        image={SITE_IMAGES.delMarDogBeach.src}
+        alt={SITE_IMAGES.delMarDogBeach.alt}
+        label="For dog walkers"
+        title={
+          <>
+            Get discovered locally —{" "}
+            <span className="text-trail-200">without giving up 20% of every walk.</span>
+          </>
+        }
+        description="PawPath is a listing platform, not a booking middleman. Owners find you, message you, and pay you directly. You invest in visibility — not transaction fees."
+        imagePosition="right"
+      >
+        <Button
+          href="/signup?role=walker"
+          size="lg"
+          className="bg-white text-trail-800 shadow-lift hover:bg-trail-50"
+        >
+          Create your listing
+        </Button>
+      </PhotoHero>
 
       <EditorialBand
         image={SITE_IMAGES.trailWalk.src}

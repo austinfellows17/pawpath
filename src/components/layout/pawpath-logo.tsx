@@ -36,18 +36,21 @@ function PawMark({ className }: { className?: string }) {
         ry="8.5"
         fill="url(#pawpath-mark-gradient)"
       />
+      {/* Trail path — inspired by PawPath wordmark */}
       <path
-        d="M15.5 26.5C17.2 24.8 18.8 24.8 20 26.5C21.2 28.2 22.8 28.2 24.5 26.5"
+        d="M12 28.5C14.5 25.5 17 25.5 20 28.5C23 31.5 25.5 31.5 28 28.5"
         stroke="#e3efe6"
-        strokeWidth="1.75"
+        strokeWidth="2"
         strokeLinecap="round"
+        fill="none"
       />
       <path
-        d="M16.5 28.5C18 30.5 22 30.5 23.5 28.5"
+        d="M14 30.5C16.5 27.5 19 27.5 20 29C21 30.5 23.5 30.5 26 27.5"
         stroke="#c2d9c8"
         strokeWidth="1.5"
         strokeLinecap="round"
-        opacity="0.9"
+        fill="none"
+        opacity="0.85"
       />
     </svg>
   );

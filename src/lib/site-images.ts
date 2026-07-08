@@ -1,7 +1,7 @@
 export const SITE_IMAGES = {
   heroBeachSunset: {
-    src: "/images/hero-beach-sunset.png",
-    alt: "A dog sitting on a wet beach at sunset, reflected in the sand",
+    src: "/images/hero-beach-frisbee.png",
+    alt: "A dog with a frisbee standing in the surf at golden hour on a wide beach",
   },
   northCountyCoast: {
     src: "/images/north-county-coast.png",

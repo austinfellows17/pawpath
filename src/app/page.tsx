@@ -32,7 +32,7 @@ export default async function HomePage() {
           </>
         }
         description={`${TAGLINE} PawPath connects you with walkers nearby — then you message, schedule, and pay directly. No booking cut, no middleman.`}
-        imagePosition="right"
+        imagePosition="center"
       >
         <div className="flex flex-wrap gap-3">
           <Button
@@ -99,8 +99,8 @@ export default async function HomePage() {
       </section>
 
       <EditorialBand
-        image={SITE_IMAGES.delMarDogBeach.src}
-        alt={SITE_IMAGES.delMarDogBeach.alt}
+        image={SITE_IMAGES.trailWalk.src}
+        alt={SITE_IMAGES.trailWalk.alt}
         label="How it works"
         title="Message first. Walk together."
         description="Browse local profiles, send a message through PawPath, and take scheduling and payment offline — on your terms, with someone who knows your neighborhood."

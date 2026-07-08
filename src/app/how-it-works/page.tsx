@@ -1,5 +1,7 @@
 import { DisclaimerBanner } from "@/components/legal/disclaimer-banner";
+import { EditorialBand } from "@/components/visual/editorial-band";
 import { PRICING_DISCLAIMER, LIABILITY_DISCLAIMER } from "@/lib/constants";
+import { SITE_IMAGES } from "@/lib/site-images";
 import { MessageCircle, Search, Handshake, ArrowRight } from "lucide-react";
 
 const steps = [
@@ -36,6 +38,16 @@ export default function HowItWorksPage() {
           </p>
         </div>
       </div>
+
+      <EditorialBand
+        image={SITE_IMAGES.beachWalkSunset.src}
+        alt={SITE_IMAGES.beachWalkSunset.alt}
+        label="The connection"
+        title="Find someone local. Walk on your terms."
+        description="PawPath helps you discover walkers in your neighborhood, start a conversation, and handle the rest directly — scheduling, rates, and payment stay between you and your walker."
+        imageFirst
+        className="pt-0"
+      />
 
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         <div className="space-y-6">
