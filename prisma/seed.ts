@@ -256,6 +256,9 @@ async function main() {
           "verificationSubmittedAt" in walker
             ? walker.verificationSubmittedAt
             : null,
+        listingReviewStatus: "APPROVED",
+        lastApprovedBio: walker.bio,
+        isPro: walker.email === "james.chen@pawpath.demo",
         isActive: true,
         email: walker.email,
         photoUrls: [],
@@ -279,6 +282,9 @@ async function main() {
           "verificationSubmittedAt" in walker
             ? walker.verificationSubmittedAt
             : null,
+        listingReviewStatus: "APPROVED",
+        lastApprovedBio: walker.bio,
+        isPro: walker.email === "james.chen@pawpath.demo",
         isActive: true,
         email: walker.email,
         photoUrls: [],

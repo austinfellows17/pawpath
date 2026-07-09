@@ -14,7 +14,9 @@ import {
 import { getWalkerById } from "@/lib/walkers";
 import { formatDistance, haversineDistanceMiles } from "@/lib/geo";
 import { LAUNCH_REGION } from "@/lib/constants";
-import { MapPin, Star, CheckCircle2 } from "lucide-react";
+import { getSession } from "@/lib/session";
+import { ReportWalkerButton } from "@/components/walkers/report-walker-button";
+import { MapPin, Star, CheckCircle2, Shield } from "lucide-react";
 
 export default async function WalkerProfilePage({
   params,
@@ -22,7 +24,7 @@ export default async function WalkerProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const walker = await getWalkerById(id);
+  const [walker, session] = await Promise.all([getWalkerById(id), getSession()]);
 
   if (!walker) {
     notFound();
@@ -49,7 +51,7 @@ export default async function WalkerProfilePage({
           </Link>
 
           <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-start">
-            <WalkerAvatar name={walker.name} size="lg" />
+            <WalkerAvatar name={walker.name} photoUrl={walker.headshotUrl} size="lg" />
             <div className="flex-1">
               <div className="flex flex-wrap gap-2">
                 {walker.listingTier !== "BASIC" && (
@@ -59,6 +61,12 @@ export default async function WalkerProfilePage({
                   <Badge variant="verified">
                     <CheckCircle2 className="mr-1 h-3 w-3" />
                     PawPath Verified
+                  </Badge>
+                )}
+                {walker.isPro && (
+                  <Badge variant="pro">
+                    <Shield className="mr-1 h-3 w-3" />
+                    Pro
                   </Badge>
                 )}
               </div>
@@ -127,6 +135,12 @@ export default async function WalkerProfilePage({
         />
 
         <div className="mt-8 space-y-4">
+          {session?.user?.role === "OWNER" && (
+            <ReportWalkerButton
+              walkerProfileId={walker.id}
+              walkerName={walker.name}
+            />
+          )}
           <DisclaimerBanner compact>{PRICING_DISCLAIMER}</DisclaimerBanner>
           <DisclaimerBanner compact>{LIABILITY_DISCLAIMER}</DisclaimerBanner>
         </div>

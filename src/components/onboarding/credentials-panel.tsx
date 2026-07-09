@@ -3,31 +3,30 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ShieldCheck, Upload } from "lucide-react";
+import { Loader2, Shield, Upload } from "lucide-react";
 
-type VerificationStatus = {
-  verificationStatus: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
-  verificationSubmittedAt: string | null;
-  verificationReviewedAt: string | null;
-  verificationNotes: string | null;
-  verificationDocFileName: string | null;
+type CredentialStatus = {
+  credentialStatus: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
+  credentialSubmittedAt: string | null;
+  credentialReviewedAt: string | null;
+  credentialNotes: string | null;
+  credentialDocFileName: string | null;
+  isPro: boolean;
 } | null;
 
-export function VerificationPanel({
-  required = false,
+export function CredentialsPanel({
   onStatusChange,
 }: {
-  required?: boolean;
   onStatusChange?: () => void;
 }) {
-  const [status, setStatus] = useState<VerificationStatus>(null);
+  const [status, setStatus] = useState<CredentialStatus>(null);
   const [loading, setLoading] = useState(true);
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    const response = await fetch("/api/verification");
+    const response = await fetch("/api/credentials");
     if (response.ok) {
       const data = await response.json();
       setStatus(data.status);
@@ -52,14 +51,14 @@ export function VerificationPanel({
     const formData = new FormData();
     formData.append("document", file);
 
-    const response = await fetch("/api/verification", {
+    const response = await fetch("/api/credentials", {
       method: "POST",
       body: formData,
     });
 
     if (!response.ok) {
       const data = await response.json();
-      setError(data.error ?? "Failed to submit document");
+      setError(data.error ?? "Failed to submit credentials");
       setSubmitting(false);
       return;
     }
@@ -78,33 +77,32 @@ export function VerificationPanel({
     );
   }
 
-  const currentStatus = status?.verificationStatus ?? "NONE";
+  const currentStatus = status?.credentialStatus ?? "NONE";
 
   return (
     <div className="space-y-4">
-      {currentStatus === "APPROVED" && (
+      <p className="text-sm text-sand-600">
+        Optional: upload Pet First Aid certification, liability insurance, or
+        bonding documents to earn a Pro badge on your listing.
+      </p>
+
+      {status?.isPro && currentStatus === "APPROVED" && (
         <div className="rounded-2xl border border-trail-200 bg-trail-50 p-5">
           <p className="inline-flex items-center gap-2 font-medium text-trail-900">
-            <ShieldCheck className="h-4 w-4" />
-            Verified
+            <Shield className="h-4 w-4" />
+            Pro walker
           </p>
           <p className="mt-2 text-sm text-trail-700">
-            Your ID was approved. The Verified badge now shows on your profile.
+            Your credentials were approved. The Pro badge shows on your profile.
           </p>
         </div>
       )}
 
       {currentStatus === "PENDING" && (
         <div className="rounded-2xl border border-sand-300 bg-sand-100 p-5">
-          <p className="flex items-center gap-2">
-            <Badge>Pending review</Badge>
-          </p>
+          <Badge>Pending review</Badge>
           <p className="mt-2 text-sm text-sand-700">
-            {status?.verificationDocFileName ?? "Your document"} was submitted
-            {status?.verificationSubmittedAt
-              ? ` on ${new Date(status.verificationSubmittedAt).toLocaleDateString()}`
-              : ""}
-            . An admin will review it soon.
+            {status?.credentialDocFileName ?? "Your document"} is being reviewed.
           </p>
         </div>
       )}
@@ -112,14 +110,11 @@ export function VerificationPanel({
       {currentStatus === "REJECTED" && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
           <p className="font-medium text-red-900">Resubmission needed</p>
-          {status?.verificationNotes && (
+          {status?.credentialNotes && (
             <p className="mt-2 text-sm text-red-800">
-              Reviewer note: {status.verificationNotes}
+              Reviewer note: {status.credentialNotes}
             </p>
           )}
-          <p className="mt-2 text-sm text-red-700">
-            Please upload a clearer document below.
-          </p>
         </div>
       )}
 
@@ -128,13 +123,8 @@ export function VerificationPanel({
           onSubmit={handleSubmit}
           className="rounded-2xl border border-dashed border-sand-300 bg-sand-50 p-6"
         >
-          {required && currentStatus === "NONE" && (
-            <p className="mb-3 text-sm font-medium text-trail-800">
-              Required before your listing can go live
-            </p>
-          )}
           <label className="text-sm font-medium text-trail-800">
-            Government-issued ID (JPEG, PNG, WebP, or PDF · max 4MB)
+            Insurance or certification (JPEG, PNG, WebP, or PDF · max 4MB)
           </label>
           <input
             type="file"
@@ -154,12 +144,8 @@ export function VerificationPanel({
             ) : (
               <Upload className="mr-2 h-4 w-4" />
             )}
-            {currentStatus === "PENDING" ? "Resubmit" : "Submit for review"}
+            Submit credentials
           </Button>
-          <p className="mt-3 text-xs text-sand-500">
-            Your document is only visible to PawPath admins for verification
-            purposes and is never shown publicly.
-          </p>
         </form>
       )}
     </div>

@@ -33,6 +33,34 @@ enum ListingTier {
   FEATURED
 }
 
+enum ListingReviewStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CredentialReviewStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProfileReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+}
+
+enum ProfileReportReason {
+  MISLEADING_PROFILE
+  UNPROFESSIONAL
+  SAFETY_CONCERN
+  SPAM
+  OTHER
+}
+
 enum MessageStatus {
   ACTIVE
   ARCHIVED
@@ -65,6 +93,8 @@ model User {
   adminReviewInquiries  ReviewInquiry[] @relation("AdminReviewInquiries")
   authorReviewInquiries ReviewInquiry[] @relation("AuthorReviewInquiries")
   reviewInquiryMessages ReviewInquiryMessage[]
+  profileReports        ProfileReport[] @relation("ProfileReports")
+  reviewedProfileReports ProfileReport[] @relation("ReviewedProfileReports")
 
   @@map("users")
 }
@@ -158,19 +188,64 @@ model WalkerProfile {
   verificationSubmittedAt DateTime?
   verificationReviewedAt  DateTime?
   verificationNotes       String?        @db.Text
-  isActive           Boolean            @default(true)
-  photoUrls          String[]
+  listingReviewStatus     ListingReviewStatus @default(NONE)
+  listingSubmittedAt      DateTime?
+  listingReviewedAt       DateTime?
+  listingReviewNotes      String?        @db.Text
+  headshotUrl             String?
+  headshotStoragePath     String?
+  lastApprovedBio         String?            @db.Text
+  lastApprovedHeadshotUrl String?
+  pendingChangesSummary   String?
+  clientReferenceName     String?
+  clientReferenceContact  String?
+  clientReferenceNotes    String?            @db.Text
+  credentialStatus        CredentialReviewStatus @default(NONE)
+  credentialDocStoragePath String?
+  credentialDocMimeType   String?
+  credentialDocFileName   String?
+  credentialSubmittedAt   DateTime?
+  credentialReviewedAt    DateTime?
+  credentialNotes         String?            @db.Text
+  isPro                   Boolean            @default(false)
+  isActive                Boolean            @default(false)
+  photoUrls               String[]
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reviews Review[]
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews  Review[]
+  reports  ProfileReport[]
 
   @@index([latitude, longitude])
   @@index([zipCode])
   @@index([listingTier])
   @@index([verificationStatus])
+  @@index([listingReviewStatus])
+  @@index([credentialStatus])
   @@map("walker_profiles")
+}
+
+model ProfileReport {
+  id              String              @id @default(cuid())
+  walkerProfileId String
+  reporterId      String
+  reason          ProfileReportReason
+  details         String?             @db.Text
+  status          ProfileReportStatus @default(PENDING)
+  adminNotes      String?             @db.Text
+  reviewedAt      DateTime?
+  reviewedById    String?
+  createdAt       DateTime            @default(now())
+
+  walkerProfile WalkerProfile @relation(fields: [walkerProfileId], references: [id], onDelete: Cascade)
+  reporter      User          @relation("ProfileReports", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy    User?         @relation("ReviewedProfileReports", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@unique([reporterId, walkerProfileId])
+  @@index([walkerProfileId, status])
+  @@index([status, createdAt])
+  @@map("profile_reports")
 }
 
 model Conversation {

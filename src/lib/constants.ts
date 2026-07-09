@@ -131,6 +131,8 @@ export type WalkerListing = {
   serviceRadiusMiles: number;
   listingTier: ListingTier;
   verificationStatus: VerificationStatus;
+  headshotUrl: string | null;
+  isPro: boolean;
   photoUrls: string[];
   distanceMiles?: number;
   averageRating?: number;

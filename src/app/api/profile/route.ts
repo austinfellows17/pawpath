@@ -4,23 +4,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { geocodeZipCode, isInSanDiegoCounty } from "@/lib/geo";
+import { walkerListingSchema } from "@/lib/walker-application";
+import { triggerListingReReview } from "@/lib/listing-review";
+import { ListingReviewStatus } from "@prisma/client";
 
 const ownerSchema = z.object({
   zipCode: z.string().regex(/^\d{5}$/),
   dogName: z.string().optional(),
   dogBreed: z.string().optional(),
   dogNotes: z.string().optional(),
-});
-
-const walkerSchema = z.object({
-  zipCode: z.string().regex(/^\d{5}$/),
-  headline: z.string().min(1),
-  bio: z.string().min(1),
-  rate30Min: z.string().optional(),
-  rate60Min: z.string().optional(),
-  services: z.array(z.string()).min(1),
-  phone: z.string().optional(),
-  email: z.string().email().optional(),
 });
 
 export async function POST(request: Request) {
@@ -73,10 +65,21 @@ export async function POST(request: Request) {
         },
       });
     } else if (session.user.role === "WALKER") {
-      const parsed = walkerSchema.safeParse(body);
+      const existing = await db.walkerProfile.findUnique({
+        where: { userId: session.user.id },
+      });
+
+      const parsed = walkerListingSchema.safeParse(body);
       if (!parsed.success) {
-        return NextResponse.json({ error: "Invalid listing data" }, { status: 400 });
+        const message = parsed.error.issues[0]?.message ?? "Invalid listing data";
+        return NextResponse.json({ error: message }, { status: 400 });
       }
+
+      const bioChanged =
+        existing?.listingReviewStatus === ListingReviewStatus.APPROVED &&
+        existing.isActive &&
+        existing.lastApprovedBio &&
+        parsed.data.bio !== existing.lastApprovedBio;
 
       await db.walkerProfile.upsert({
         where: { userId: session.user.id },
@@ -91,7 +94,10 @@ export async function POST(request: Request) {
           latitude: geocoded.latitude,
           longitude: geocoded.longitude,
           phone: parsed.data.phone,
-          email: parsed.data.email ?? session.user.email,
+          email: session.user.email,
+          clientReferenceName: parsed.data.clientReferenceName || null,
+          clientReferenceContact: parsed.data.clientReferenceContact || null,
+          clientReferenceNotes: parsed.data.clientReferenceNotes || null,
         },
         create: {
           userId: session.user.id,
@@ -105,9 +111,20 @@ export async function POST(request: Request) {
           latitude: geocoded.latitude,
           longitude: geocoded.longitude,
           phone: parsed.data.phone,
-          email: parsed.data.email ?? session.user.email,
+          email: session.user.email,
+          clientReferenceName: parsed.data.clientReferenceName || null,
+          clientReferenceContact: parsed.data.clientReferenceContact || null,
+          clientReferenceNotes: parsed.data.clientReferenceNotes || null,
+          isActive: false,
         },
       });
+
+      if (bioChanged) {
+        await triggerListingReReview({
+          userId: session.user.id,
+          changes: ["bio"],
+        });
+      }
     } else {
       return NextResponse.json({ error: "Invalid role for profile" }, { status: 400 });
     }

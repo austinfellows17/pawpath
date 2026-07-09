@@ -13,10 +13,27 @@ export async function needsOnboarding(userId: string, role: UserRole) {
   if (role === "WALKER") {
     const profile = await db.walkerProfile.findUnique({
       where: { userId },
-      select: { id: true },
     });
-    return !profile;
+    if (!profile) return true;
+
+    const { needsWalkerOnboarding } = await import("@/lib/walker-application");
+    return needsWalkerOnboarding(profile);
   }
 
   return false;
+}
+
+export async function getWalkerDashboardStatus(userId: string) {
+  const profile = await db.walkerProfile.findUnique({
+    where: { userId },
+    select: {
+      listingReviewStatus: true,
+      listingReviewNotes: true,
+      listingSubmittedAt: true,
+      isActive: true,
+      headshotUrl: true,
+    },
+  });
+
+  return profile;
 }

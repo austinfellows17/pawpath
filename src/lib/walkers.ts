@@ -35,6 +35,8 @@ function toWalkerListing(
     serviceRadiusMiles: profile.serviceRadiusMiles,
     listingTier: profile.listingTier,
     verificationStatus: profile.verificationStatus,
+    headshotUrl: profile.headshotUrl,
+    isPro: profile.isPro,
     photoUrls: profile.photoUrls,
     distanceMiles,
     averageRating,
@@ -69,7 +71,7 @@ export async function searchWalkers({
   const center = geocoded ?? LAUNCH_REGION.center;
 
   const profiles = await db.walkerProfile.findMany({
-    where: { isActive: true },
+    where: { isActive: true, listingReviewStatus: "APPROVED" },
     include: walkerInclude,
   });
 
@@ -94,7 +96,7 @@ export async function searchWalkers({
 
 export async function getWalkerById(id: string): Promise<WalkerListing | null> {
   const profile = await db.walkerProfile.findFirst({
-    where: { id, isActive: true },
+    where: { id, isActive: true, listingReviewStatus: "APPROVED" },
     include: walkerInclude,
   });
 

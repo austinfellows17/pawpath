@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/lib/session";
-import { needsOnboarding } from "@/lib/onboarding";
+import { needsOnboarding, getWalkerDashboardStatus } from "@/lib/onboarding";
+import { Clock, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -15,6 +16,10 @@ export default async function DashboardPage() {
   }
 
   const { role, name } = session.user;
+  const walkerStatus =
+    role === "WALKER"
+      ? await getWalkerDashboardStatus(session.user.id)
+      : null;
 
   return (
     <>
@@ -35,6 +40,59 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        {walkerStatus?.listingReviewStatus === "PENDING" && (
+          <div className="mb-6 flex gap-3 rounded-2xl border border-sand-300 bg-sand-100 p-5">
+            <Clock className="mt-0.5 h-5 w-5 shrink-0 text-trail-700" />
+            <div>
+              <p className="font-medium text-trail-900">Application under review</p>
+              <p className="mt-1 text-sm text-sand-700">
+                Your listing won&apos;t appear in search until an admin approves
+                it. This usually takes 1–2 business days.
+                {walkerStatus.listingSubmittedAt && (
+                  <>
+                    {" "}
+                    Submitted{" "}
+                    {new Date(walkerStatus.listingSubmittedAt).toLocaleDateString()}.
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {walkerStatus?.listingReviewStatus === "REJECTED" && (
+          <div className="mb-6 flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-5">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-700" />
+            <div>
+              <p className="font-medium text-red-900">Application needs changes</p>
+              {walkerStatus.listingReviewNotes && (
+                <p className="mt-1 text-sm text-red-800">
+                  {walkerStatus.listingReviewNotes}
+                </p>
+              )}
+              <Link
+                href="/onboarding?step=submit"
+                className="mt-2 inline-block text-sm font-medium text-red-900 underline"
+              >
+                Update and resubmit your application
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {walkerStatus?.listingReviewStatus === "APPROVED" &&
+          walkerStatus.isActive && (
+            <div className="mb-6 flex gap-3 rounded-2xl border border-trail-200 bg-trail-50 p-5">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-trail-700" />
+              <div>
+                <p className="font-medium text-trail-900">Your listing is live</p>
+                <p className="mt-1 text-sm text-trail-700">
+                  Dog owners in your area can find and message you.
+                </p>
+              </div>
+            </div>
+          )}
+
         <div className="grid gap-4 sm:grid-cols-2">
           <DashboardCard
             title="Notifications"
@@ -65,23 +123,23 @@ export default async function DashboardPage() {
             <>
               <DashboardCard
                 title="Edit listing"
-                description="Update your bio, services, rates, and photos."
+                description="Update your bio, services, rates, and headshot."
                 href="/onboarding"
               />
-            <DashboardCard
-              title="Listing tier"
-              description="Upgrade visibility in local search."
-              href="/dashboard/billing"
-            />
+              <DashboardCard
+                title="Listing tier"
+                description="Upgrade visibility in local search."
+                href="/dashboard/billing"
+              />
+              <DashboardCard
+                title="Pro credentials"
+                description="Upload insurance or certification for a Pro badge."
+                href="/onboarding?step=credentials"
+              />
               <DashboardCard
                 title="Messages"
                 description="Respond to dog owners who reached out."
                 href="/messages"
-              />
-              <DashboardCard
-                title="Verification"
-                description="Submit ID for admin review."
-                href="/onboarding?step=verification"
               />
             </>
           )}
@@ -89,7 +147,7 @@ export default async function DashboardPage() {
           {role === "ADMIN" && (
             <DashboardCard
               title="Admin panel"
-              description="Review verifications and moderate reviews."
+              description="Review walker applications and moderate reviews."
               href="/admin"
             />
           )}

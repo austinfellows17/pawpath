@@ -4,7 +4,7 @@ import { formatDistance } from "@/lib/geo";
 import { LISTING_TIERS, type WalkerListing } from "@/lib/constants";
 import { WalkerPricing } from "@/components/walkers/walker-pricing";
 import { WalkerAvatar } from "@/components/walkers/walker-avatar";
-import { MapPin, Star, CheckCircle2 } from "lucide-react";
+import { MapPin, Star, CheckCircle2, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function WalkerCard({
@@ -26,7 +26,7 @@ export function WalkerCard({
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <WalkerAvatar name={walker.name} size="sm" />
+        <WalkerAvatar name={walker.name} photoUrl={walker.headshotUrl} size="sm" />
         <div className="flex flex-wrap justify-end gap-1.5">
           {walker.listingTier !== "BASIC" && (
             <Badge variant="tier">{tierLabel}</Badge>
@@ -35,6 +35,12 @@ export function WalkerCard({
             <Badge variant="verified">
               <CheckCircle2 className="mr-1 h-3 w-3" />
               Verified
+            </Badge>
+          )}
+          {walker.isPro && (
+            <Badge variant="pro">
+              <Shield className="mr-1 h-3 w-3" />
+              Pro
             </Badge>
           )}
         </div>

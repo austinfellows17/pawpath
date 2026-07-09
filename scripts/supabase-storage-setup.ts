@@ -7,7 +7,11 @@
 
 import { config } from "dotenv";
 import {
+  ensureCredentialsBucket,
+  ensureProfilePhotosBucket,
   ensureVerificationBucket,
+  getCredentialsBucketName,
+  getProfilePhotosBucketName,
   getVerificationBucketName,
   isSupabaseStorageConfigured,
 } from "../src/lib/supabase-storage";
@@ -20,13 +24,18 @@ async function main() {
     console.log('SUPABASE_URL="https://[PROJECT-REF].supabase.co"');
     console.log("SUPABASE_SERVICE_ROLE_KEY=\"...\"");
     console.log('SUPABASE_VERIFICATION_BUCKET="verification-documents"');
+    console.log('SUPABASE_PROFILE_PHOTOS_BUCKET="profile-photos"');
+    console.log('SUPABASE_CREDENTIALS_BUCKET="walker-credentials"');
     process.exit(1);
   }
 
-  const bucket = await ensureVerificationBucket();
-  console.log(`\nReady: private bucket "${bucket}" (${getVerificationBucketName()})`);
-  console.log("\nWalker uploads go to Supabase Storage — not the database.");
-  console.log("Only admins can view documents through the admin panel.\n");
+  const verificationBucket = await ensureVerificationBucket();
+  const profileBucket = await ensureProfilePhotosBucket();
+  const credentialsBucket = await ensureCredentialsBucket();
+  console.log(`\nReady: private bucket "${verificationBucket}" (${getVerificationBucketName()})`);
+  console.log(`Ready: public bucket "${profileBucket}" (${getProfilePhotosBucketName()})`);
+  console.log(`Ready: private bucket "${credentialsBucket}" (${getCredentialsBucketName()})`);
+  console.log("\nWalker headshots are public. ID and credential documents stay private.\n");
 }
 
 main().catch((error) => {

@@ -39,7 +39,10 @@ export async function requireAdmin() {
 
 export async function getPendingVerifications(): Promise<VerificationQueueItem[]> {
   const profiles = await db.walkerProfile.findMany({
-    where: { verificationStatus: VerificationStatus.PENDING },
+    where: {
+      verificationStatus: VerificationStatus.PENDING,
+      listingReviewStatus: { not: "PENDING" },
+    },
     include: { user: { select: { name: true, email: true } } },
     orderBy: { verificationSubmittedAt: "asc" },
   });

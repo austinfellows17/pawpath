@@ -6,7 +6,7 @@ export function Badge({
   className,
 }: {
   children: React.ReactNode;
-  variant?: "default" | "verified" | "tier" | "muted";
+  variant?: "default" | "verified" | "tier" | "muted" | "pro";
   className?: string;
 }) {
   return (
@@ -17,6 +17,7 @@ export function Badge({
         variant === "verified" && "bg-trail-700 text-white",
         variant === "tier" && "bg-accent/15 text-accent",
         variant === "muted" && "bg-sand-200 text-sand-700",
+        variant === "pro" && "bg-trail-900 text-white",
         className
       )}
     >
