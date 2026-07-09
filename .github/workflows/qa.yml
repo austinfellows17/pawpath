@@ -1,0 +1,63 @@
+name: QA
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+          NEXTAUTH_SECRET: ci-build-secret
+          NEXTAUTH_URL: http://localhost:3000
+
+      - name: Deploy readiness check
+        run: npm run deploy:check
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_VERIFICATION_BUCKET: verification-documents
+          SUPABASE_PROFILE_PHOTOS_BUCKET: profile-photos
+          SUPABASE_CREDENTIALS_BUCKET: walker-credentials
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          STRIPE_PRICE_STANDARD: ${{ secrets.STRIPE_PRICE_STANDARD }}
+          STRIPE_PRICE_FEATURED: ${{ secrets.STRIPE_PRICE_FEATURED }}
+          STRIPE_PRICE_BACKGROUND_CHECK: ${{ secrets.STRIPE_PRICE_BACKGROUND_CHECK }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+        continue-on-error: true
+
+      - name: Supabase storage smoke test
+        run: npm run storage:verify
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_VERIFICATION_BUCKET: verification-documents
+          SUPABASE_PROFILE_PHOTOS_BUCKET: profile-photos
+          SUPABASE_CREDENTIALS_BUCKET: walker-credentials
+        continue-on-error: true
