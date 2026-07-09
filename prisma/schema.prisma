@@ -61,6 +61,18 @@ enum ProfileReportReason {
   OTHER
 }
 
+enum BackgroundCheckStatus {
+  NONE
+  INVITED
+  PENDING
+  IN_PROGRESS
+  CLEAR
+  CONSIDER
+  SUSPENDED
+  FAILED
+  CANCELED
+}
+
 enum MessageStatus {
   ACTIVE
   ARCHIVED
@@ -208,6 +220,16 @@ model WalkerProfile {
   credentialReviewedAt    DateTime?
   credentialNotes         String?            @db.Text
   isPro                   Boolean            @default(false)
+  backgroundCheckStatus   BackgroundCheckStatus @default(NONE)
+  backgroundCheckInvitedAt DateTime?
+  backgroundCheckCompletedAt DateTime?
+  backgroundCheckNotes    String?            @db.Text
+  checkrCandidateId       String?
+  checkrInvitationId      String?
+  checkrReportId          String?
+  isBackgroundChecked     Boolean            @default(false)
+  backgroundCheckAddonPurchasedAt DateTime?
+  backgroundCheckStripeSessionId  String?
   isActive                Boolean            @default(false)
   photoUrls               String[]
   createdAt          DateTime           @default(now())
@@ -223,6 +245,7 @@ model WalkerProfile {
   @@index([verificationStatus])
   @@index([listingReviewStatus])
   @@index([credentialStatus])
+  @@index([backgroundCheckStatus])
   @@map("walker_profiles")
 }
 

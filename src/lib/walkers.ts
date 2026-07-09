@@ -2,6 +2,7 @@ import { ReviewStatus, type WalkerProfile, type User } from "@prisma/client";
 import { db } from "@/lib/db";
 import { LAUNCH_REGION, type WalkerListing } from "@/lib/constants";
 import { geocodeZipCode, haversineDistanceMiles } from "@/lib/geo";
+import { showsBackgroundCheckBadge } from "@/lib/background-check";
 
 type WalkerWithRelations = WalkerProfile & {
   user: Pick<User, "name">;
@@ -37,6 +38,7 @@ function toWalkerListing(
     verificationStatus: profile.verificationStatus,
     headshotUrl: profile.headshotUrl,
     isPro: profile.isPro,
+    isBackgroundChecked: showsBackgroundCheckBadge(profile),
     photoUrls: profile.photoUrls,
     distanceMiles,
     averageRating,

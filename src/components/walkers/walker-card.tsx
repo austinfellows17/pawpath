@@ -4,6 +4,7 @@ import { formatDistance } from "@/lib/geo";
 import { LISTING_TIERS, type WalkerListing } from "@/lib/constants";
 import { WalkerPricing } from "@/components/walkers/walker-pricing";
 import { WalkerAvatar } from "@/components/walkers/walker-avatar";
+import { BackgroundCheckedBadge } from "@/components/walkers/background-checked-badge";
 import { MapPin, Star, CheckCircle2, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +48,12 @@ export function WalkerCard({
       </div>
 
       <h3 className="mt-4 font-display text-lg font-semibold text-trail-900 group-hover:text-trail-700">
-        {walker.name}
+        <span className="inline-flex flex-wrap items-center gap-2">
+          {walker.isBackgroundChecked && (
+            <BackgroundCheckedBadge className="-mt-0.5" />
+          )}
+          <span>{walker.name}</span>
+        </span>
       </h3>
       <p className="text-sm text-trail-600">{walker.headline}</p>
 

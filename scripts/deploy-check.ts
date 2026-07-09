@@ -36,7 +36,8 @@ function checkStripe() {
     has("STRIPE_WEBHOOK_SECRET") &&
     has("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY") &&
     has("STRIPE_PRICE_STANDARD") &&
-    has("STRIPE_PRICE_FEATURED")
+    has("STRIPE_PRICE_FEATURED") &&
+    has("STRIPE_PRICE_BACKGROUND_CHECK")
   );
 }
 

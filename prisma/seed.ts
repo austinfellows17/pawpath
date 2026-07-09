@@ -259,6 +259,19 @@ async function main() {
         listingReviewStatus: "APPROVED",
         lastApprovedBio: walker.bio,
         isPro: walker.email === "james.chen@pawpath.demo",
+        isBackgroundChecked:
+          walker.email === "james.chen@pawpath.demo" ||
+          walker.email === "maria.santos@pawpath.demo",
+        backgroundCheckAddonPurchasedAt:
+          walker.email === "james.chen@pawpath.demo" ||
+          walker.email === "maria.santos@pawpath.demo"
+            ? new Date()
+            : null,
+        backgroundCheckStatus:
+          walker.email === "james.chen@pawpath.demo" ||
+          walker.email === "maria.santos@pawpath.demo"
+            ? "CLEAR"
+            : "NONE",
         isActive: true,
         email: walker.email,
         photoUrls: [],
@@ -285,6 +298,19 @@ async function main() {
         listingReviewStatus: "APPROVED",
         lastApprovedBio: walker.bio,
         isPro: walker.email === "james.chen@pawpath.demo",
+        isBackgroundChecked:
+          walker.email === "james.chen@pawpath.demo" ||
+          walker.email === "maria.santos@pawpath.demo",
+        backgroundCheckAddonPurchasedAt:
+          walker.email === "james.chen@pawpath.demo" ||
+          walker.email === "maria.santos@pawpath.demo"
+            ? new Date()
+            : null,
+        backgroundCheckStatus:
+          walker.email === "james.chen@pawpath.demo" ||
+          walker.email === "maria.santos@pawpath.demo"
+            ? "CLEAR"
+            : "NONE",
         isActive: true,
         email: walker.email,
         photoUrls: [],

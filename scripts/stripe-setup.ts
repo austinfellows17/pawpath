@@ -59,9 +59,24 @@ async function main() {
     metadata: { tier: "FEATURED" },
   });
 
+  const bgCheckProduct = await stripe.products.create({
+    name: "PawPath Background Check",
+    description:
+      "One-time full background screening via Checkr + BG Verified badge (Summit/Peak add-on)",
+    metadata: { product: "background_check" },
+  });
+
+  const bgCheckPrice = await stripe.prices.create({
+    product: bgCheckProduct.id,
+    unit_amount: 5000,
+    currency: "usd",
+    metadata: { product: "background_check" },
+  });
+
   console.log("\nAdd these to your .env:\n");
   console.log(`STRIPE_PRICE_STANDARD="${summitPrice.id}"`);
   console.log(`STRIPE_PRICE_FEATURED="${peakPrice.id}"`);
+  console.log(`STRIPE_PRICE_BACKGROUND_CHECK="${bgCheckPrice.id}"`);
   console.log("\nWebhook endpoint: POST /api/billing/webhook");
   console.log("Listen locally: stripe listen --forward-to localhost:3000/api/billing/webhook\n");
 }

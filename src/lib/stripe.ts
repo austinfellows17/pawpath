@@ -1,6 +1,10 @@
 import Stripe from "stripe";
 import { ListingTier } from "@prisma/client";
-import { LISTING_TIERS, type PaidListingTier } from "@/lib/constants";
+import {
+  BACKGROUND_CHECK_ADDON,
+  LISTING_TIERS,
+  type PaidListingTier,
+} from "@/lib/constants";
 
 let stripeClient: Stripe | null = null;
 
@@ -51,4 +55,13 @@ export function tierFromStripePriceId(priceId: string | null | undefined): Listi
 
 export function tierRank(tier: ListingTier) {
   return { FEATURED: 2, STANDARD: 1, BASIC: 0 }[tier];
+}
+
+export function getBackgroundCheckPriceId() {
+  const envKey = BACKGROUND_CHECK_ADDON.stripePriceEnvKey;
+  const priceId = process.env[envKey];
+  if (!priceId) {
+    throw new Error(`Missing ${envKey} in environment`);
+  }
+  return priceId;
 }

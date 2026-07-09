@@ -4,6 +4,7 @@ import { getSession } from "@/lib/session";
 import { getWalkerBillingStatus } from "@/lib/billing";
 import { LISTING_TIERS, PAID_LISTING_TIERS } from "@/lib/constants";
 import { BillingPortalButton, TierCheckoutButton } from "@/components/billing/tier-checkout-button";
+import { BillingBackgroundCheckPanel } from "@/components/billing/background-check-panel";
 import { DisclaimerBanner } from "@/components/legal/disclaimer-banner";
 import { Check } from "lucide-react";
 import type { ListingTier } from "@prisma/client";
@@ -17,7 +18,7 @@ function tierRank(tier: ListingTier) {
 export default async function BillingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ success?: string; canceled?: string }>;
+  searchParams: Promise<{ success?: string; canceled?: string; bg_success?: string; bg_canceled?: string }>;
 }) {
   const session = await getSession();
   if (!session?.user) redirect("/login?callbackUrl=/dashboard/billing");
@@ -29,6 +30,8 @@ export default async function BillingPage({
   const params = await searchParams;
   const showSuccess = params.success === "1";
   const showCanceled = params.canceled === "1";
+  const showBgSuccess = params.bg_success === "1";
+  const showBgCanceled = params.bg_canceled === "1";
 
   return (
     <>
@@ -53,13 +56,27 @@ export default async function BillingPage({
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
         {showSuccess && (
           <div className="mb-8 rounded-2xl border border-trail-200 bg-trail-50 p-5 text-sm text-trail-800">
-            Payment received — your tier should update within a minute. Refresh
-            if it hasn&apos;t changed yet.
+            {showBgSuccess
+              ? "Payment received — your tier is updating and your background check screening will begin shortly. Check your email for a Checkr invitation if configured."
+              : "Payment received — your tier should update within a minute. Refresh if it hasn't changed yet."}
           </div>
         )}
         {showCanceled && (
           <div className="mb-8 rounded-2xl border border-sand-200 bg-sand-50 p-5 text-sm text-sand-700">
             Checkout canceled. You can upgrade whenever you&apos;re ready.
+          </div>
+        )}
+
+        {showBgSuccess && !showSuccess && (
+          <div className="mb-8 rounded-2xl border border-trail-200 bg-trail-50 p-5 text-sm text-trail-800">
+            Background check payment received — screening should begin within a
+            minute. Check your email for a Checkr invitation if configured.
+          </div>
+        )}
+        {showBgCanceled && (
+          <div className="mb-8 rounded-2xl border border-sand-200 bg-sand-50 p-5 text-sm text-sand-700">
+            Background check checkout canceled. You can add it anytime from this
+            page.
           </div>
         )}
 
@@ -97,6 +114,11 @@ export default async function BillingPage({
               upgrades will be available once payment keys are added.
             </p>
           )}
+
+          <BillingBackgroundCheckPanel
+            isPaidTier={billing.tier === "STANDARD" || billing.tier === "FEATURED"}
+            stripeConfigured={billing.configured}
+          />
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -154,6 +176,9 @@ export default async function BillingPage({
                     <TierCheckoutButton
                       tier={tier as (typeof PAID_LISTING_TIERS)[number]}
                       label={`Upgrade to ${info.label}`}
+                      showBackgroundCheckUpsell={
+                        billing.canPurchaseBackgroundCheckAddon
+                      }
                     />
                   ) : (
                     <p className="text-center text-sm text-sand-500">

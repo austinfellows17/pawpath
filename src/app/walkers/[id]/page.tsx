@@ -16,6 +16,7 @@ import { formatDistance, haversineDistanceMiles } from "@/lib/geo";
 import { LAUNCH_REGION } from "@/lib/constants";
 import { getSession } from "@/lib/session";
 import { ReportWalkerButton } from "@/components/walkers/report-walker-button";
+import { BackgroundCheckedBadge } from "@/components/walkers/background-checked-badge";
 import { MapPin, Star, CheckCircle2, Shield } from "lucide-react";
 
 export default async function WalkerProfilePage({
@@ -70,7 +71,12 @@ export default async function WalkerProfilePage({
                   </Badge>
                 )}
               </div>
-              <h1 className="headline-lg mt-3">{walker.name}</h1>
+              <h1 className="headline-lg mt-3">
+                <span className="inline-flex flex-wrap items-center gap-3">
+                  {walker.isBackgroundChecked && <BackgroundCheckedBadge size="md" />}
+                  <span>{walker.name}</span>
+                </span>
+              </h1>
               <p className="mt-2 text-lg text-trail-600">{walker.headline}</p>
 
               <div className="mt-4 flex flex-wrap gap-4 text-sm text-sand-700">

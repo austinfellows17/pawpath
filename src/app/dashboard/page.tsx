@@ -147,7 +147,7 @@ export default async function DashboardPage() {
           {role === "ADMIN" && (
             <DashboardCard
               title="Admin panel"
-              description="Review walker applications and moderate reviews."
+              description="Live metrics, users, background checks, and moderation."
               href="/admin"
             />
           )}

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import {
   applySubscriptionToWalker,
   downgradeWalkerToBasic,
+  fulfillBackgroundCheckPurchase,
 } from "@/lib/billing";
 import { getStripe } from "@/lib/stripe";
 
@@ -37,6 +38,21 @@ export async function POST(request: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+
+        if (
+          session.mode === "payment" &&
+          session.metadata?.checkoutType === "background_check"
+        ) {
+          const walkerProfileId = session.metadata.walkerProfileId;
+          if (walkerProfileId && session.payment_status === "paid") {
+            await fulfillBackgroundCheckPurchase({
+              walkerProfileId,
+              stripeSessionId: session.id,
+            });
+          }
+          break;
+        }
+
         if (session.mode !== "subscription" || !session.subscription) break;
 
         const subscription = await stripe.subscriptions.retrieve(
@@ -49,6 +65,16 @@ export async function POST(request: Request) {
 
         if (walkerProfileId) {
           await applySubscriptionToWalker({ walkerProfileId, subscription });
+
+          if (
+            session.metadata?.includeBackgroundCheck === "true" &&
+            session.payment_status === "paid"
+          ) {
+            await fulfillBackgroundCheckPurchase({
+              walkerProfileId,
+              stripeSessionId: session.id,
+            });
+          }
         }
         break;
       }

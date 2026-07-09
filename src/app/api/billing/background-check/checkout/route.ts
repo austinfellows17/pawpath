@@ -1,18 +1,11 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
-import { PAID_LISTING_TIERS } from "@/lib/constants";
 import {
-  createTierCheckoutSession,
+  createBackgroundCheckCheckoutSession,
   requireWalkerUser,
 } from "@/lib/billing";
 import { isStripeConfigured } from "@/lib/stripe";
 
-const checkoutSchema = z.object({
-  tier: z.enum(PAID_LISTING_TIERS),
-  includeBackgroundCheck: z.boolean().optional(),
-});
-
-export async function POST(request: Request) {
+export async function POST() {
   if (!isStripeConfigured()) {
     return NextResponse.json(
       { error: "Billing is not configured yet. Contact support." },
@@ -22,21 +15,13 @@ export async function POST(request: Request) {
 
   try {
     const { user, profile } = await requireWalkerUser();
-    const body = await request.json();
-    const parsed = checkoutSchema.safeParse(body);
 
-    if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
-    }
-
-    const session = await createTierCheckoutSession({
+    const session = await createBackgroundCheckCheckoutSession({
       userId: user.id,
       email: user.email,
       name: user.name,
       walkerProfileId: profile.id,
-      tier: parsed.data.tier,
       existingCustomerId: profile.stripeCustomerId,
-      includeBackgroundCheck: parsed.data.includeBackgroundCheck ?? false,
     });
 
     return NextResponse.json({ url: session.url });
@@ -47,10 +32,11 @@ export async function POST(request: Request) {
     if (message === "Forbidden") {
       return NextResponse.json({ error: message }, { status: 403 });
     }
-    if (message === "Walker profile required") {
-      return NextResponse.json({ error: message }, { status: 400 });
-    }
-    if (message === "Background check add-on already purchased") {
+    if (
+      message === "Walker profile required" ||
+      message === "Background check add-on requires Summit or Peak tier" ||
+      message === "Background check add-on already purchased"
+    ) {
       return NextResponse.json({ error: message }, { status: 400 });
     }
 

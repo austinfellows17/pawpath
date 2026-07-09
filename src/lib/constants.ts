@@ -56,6 +56,7 @@ export const LISTING_TIERS: Record<
     description: "Stand out in local search with enhanced visibility.",
     features: [
       "Priority placement in search & map",
+      "Optional $50 background check add-on + BG Verified badge",
       "Verified badge (after admin approval)",
       "Up to 6 profile photos",
     ],
@@ -68,6 +69,7 @@ export const LISTING_TIERS: Record<
     description: "Maximum visibility for established local walkers.",
     features: [
       "Top of search & featured map pins",
+      "Optional $50 background check add-on + BG Verified badge",
       "Highlighted profile card",
       "Up to 12 profile photos",
     ],
@@ -79,6 +81,16 @@ export const LISTING_TIERS: Record<
 
 export const PAID_LISTING_TIERS = ["STANDARD", "FEATURED"] as const;
 export type PaidListingTier = (typeof PAID_LISTING_TIERS)[number];
+
+/** One-time add-on for Summit/Peak walkers — full Checkr screening + BG Verified badge */
+export const BACKGROUND_CHECK_ADDON = {
+  label: "Background check",
+  description:
+    "Full criminal background screening via Checkr and the BG Verified badge on your listing.",
+  priceCents: 5000,
+  priceLabel: "$50",
+  stripePriceEnvKey: "STRIPE_PRICE_BACKGROUND_CHECK",
+} as const;
 
 export const WALKER_SERVICES = [
   "Dog walking",
@@ -133,6 +145,7 @@ export type WalkerListing = {
   verificationStatus: VerificationStatus;
   headshotUrl: string | null;
   isPro: boolean;
+  isBackgroundChecked: boolean;
   photoUrls: string[];
   distanceMiles?: number;
   averageRating?: number;
