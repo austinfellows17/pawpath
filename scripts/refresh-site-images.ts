@@ -1,8 +1,9 @@
 /**
- * Downloads high-resolution editorial photos (Unsplash) for PawPath marketing pages.
+ * Downloads high-resolution editorial photos (Unsplash License) for PawPath.
+ * Each image is chosen to match the section copy where it appears.
  *
  * Usage:
- *   npx tsx scripts/refresh-site-images.ts
+ *   npm run images:refresh
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
@@ -10,25 +11,30 @@ import { join } from "node:path";
 
 const OUT_DIR = join(process.cwd(), "public/images");
 
-const IMAGES: Array<{ file: string; url: string }> = [
+const IMAGES: Array<{ file: string; usage: string; url: string }> = [
   {
     file: "hero-beach-frisbee.webp",
+    usage: "Home hero — find a local walker",
     url: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&w=2400&q=90",
   },
   {
     file: "north-county-coast.webp",
-    url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=2400&q=90",
+    usage: 'Home + Find — "Built for your neighborhood" (residential street walk)',
+    url: "https://images.unsplash.com/photo-1646445767813-14b48536f598?auto=format&fit=crop&w=2400&q=90",
   },
   {
     file: "del-mar-dog-beach.webp",
+    usage: "For walkers hero — get discovered locally",
     url: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=2400&q=90",
   },
   {
     file: "trail-walk.webp",
-    url: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&w=2400&q=90",
+    usage: 'Home + For walkers — daily routes / "Message first. Walk together."',
+    url: "https://images.unsplash.com/photo-1656448195312-e892b892b24e?auto=format&fit=crop&w=2400&q=90",
   },
   {
     file: "beach-walk-sunset.webp",
+    usage: "Home CTA + How it works — ready to find your walker",
     url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=90",
   },
 ];
@@ -45,9 +51,8 @@ async function main() {
     const buffer = Buffer.from(await response.arrayBuffer());
     await writeFile(join(OUT_DIR, image.file), buffer);
     console.log(`Saved ${image.file} (${Math.round(buffer.length / 1024)} KB)`);
+    console.log(`  → ${image.usage}\n`);
   }
-
-  console.log("\nUpdate src/lib/site-images.ts paths to .webp filenames.\n");
 }
 
 main().catch((error) => {

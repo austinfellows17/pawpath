@@ -5,7 +5,7 @@ export const SITE_IMAGES = {
   },
   northCountyCoast: {
     src: "/images/north-county-coast.webp",
-    alt: "North San Diego County coastline with golden cliffs and the Pacific Ocean",
+    alt: "A person walking their dog along a tree-lined neighborhood street",
   },
   delMarDogBeach: {
     src: "/images/del-mar-dog-beach.webp",
@@ -13,7 +13,7 @@ export const SITE_IMAGES = {
   },
   trailWalk: {
     src: "/images/trail-walk.webp",
-    alt: "A person walking their dog along a scenic outdoor path",
+    alt: "A person walking their dog on a wooded neighborhood trail",
   },
   beachWalkSunset: {
     src: "/images/beach-walk-sunset.webp",
