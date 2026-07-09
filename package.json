@@ -21,7 +21,7 @@
     "storage:verify": "tsx scripts/supabase-storage-verify.ts",
     "notifications:setup": "tsx scripts/notifications-setup.ts",
     "notifications:verify": "tsx scripts/notifications-verify.ts",
-    "mapbox:setup": "tsx scripts/mapbox-setup.ts",
+    "images:refresh": "tsx scripts/refresh-site-images.ts",
     "deploy:check": "tsx scripts/deploy-check.ts",
     "vercel:env-sync": "tsx scripts/vercel-env-sync.ts",
     "vercel:env-sync-keys": "tsx scripts/vercel-env-sync-keys.ts",

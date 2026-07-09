@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { WalkerCard } from "@/components/walkers/walker-card";
 import { WalkerMap } from "@/components/walkers/walker-map";
 import { DisclaimerBanner } from "@/components/legal/disclaimer-banner";
+import { SiteImage } from "@/components/visual/site-image";
 import { Button } from "@/components/ui/button";
 import { LAUNCH_REGION, PRICING_DISCLAIMER, type WalkerListing } from "@/lib/constants";
+import { SITE_IMAGES } from "@/lib/site-images";
 import { List, Map, Loader2 } from "lucide-react";
 
 export default function FindWalkersPage() {
@@ -47,11 +49,15 @@ export default function FindWalkersPage() {
 
   return (
     <>
-      <div className="relative overflow-hidden border-b border-sand-200/50">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-[0.18]"
-          style={{ backgroundImage: "url('/images/north-county-coast.png')" }}
+      <div className="relative min-h-[11rem] overflow-hidden border-b border-sand-200/50 sm:min-h-[14rem]">
+        <SiteImage
+          src={SITE_IMAGES.northCountyCoast.src}
+          alt=""
+          fill
+          className="object-cover object-center opacity-20"
+          sizes="100vw"
           aria-hidden
+          priority={false}
         />
         <div className="hero-band relative">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
@@ -66,7 +72,7 @@ export default function FindWalkersPage() {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <div className="glass flex flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:items-end">
+      <div className="glass flex flex-col gap-4 rounded-3xl p-4 sm:flex-row sm:items-end sm:p-5">
         <div className="flex-1">
           <label htmlFor="zip" className="text-sm font-medium text-trail-800">
             Your zip code
@@ -94,7 +100,7 @@ export default function FindWalkersPage() {
             className="mt-2 w-full accent-trail-600"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex w-full gap-2 sm:w-auto">
           <Button
             variant={view === "list" ? "primary" : "outline"}
             size="sm"

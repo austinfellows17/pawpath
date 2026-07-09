@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
+import { SiteImage } from "@/components/visual/site-image";
 import { Button } from "@/components/ui/button";
 import { Camera, Loader2, Upload } from "lucide-react";
 
@@ -51,12 +51,12 @@ export function HeadshotPanel({
         <div className="avatar-ring shrink-0 rounded-3xl">
           <div className="relative h-32 w-32 overflow-hidden rounded-[26px] bg-sand-100">
             {headshotUrl ? (
-              <Image
+              <SiteImage
                 src={headshotUrl}
                 alt="Your headshot"
                 fill
                 className="object-cover object-[center_20%]"
-                sizes="128px"
+                sizes="(max-width: 640px) 128px, 128px"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-sm text-sand-500">

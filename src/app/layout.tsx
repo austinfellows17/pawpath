@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
 import { Header } from "@/components/layout/header";
 import { BetaBanner } from "@/components/layout/beta-banner";
@@ -27,6 +27,13 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
     apple: "/favicon.svg",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#f3f8f4",
 };
 
 export default function RootLayout({

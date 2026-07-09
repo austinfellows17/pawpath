@@ -18,7 +18,7 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/40 bg-sand-50/75 backdrop-blur-xl backdrop-saturate-150">
+    <header className="sticky top-0 z-50 border-b border-white/40 bg-sand-50/75 pt-[env(safe-area-inset-top)] backdrop-blur-xl backdrop-saturate-150">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
         <PawPathLogo showTagline={false} />
 

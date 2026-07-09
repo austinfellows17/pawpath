@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SiteImage } from "@/components/visual/site-image";
 import { cn } from "@/lib/utils";
 
 const sizeStyles = {
@@ -66,7 +66,7 @@ export function WalkerAvatar({
     <div className={cn("avatar-ring shrink-0", styles.ring, className)}>
       <div className={cn("relative overflow-hidden", styles.inner)}>
         {photoUrl ? (
-          <Image
+          <SiteImage
             src={photoUrl}
             alt={`${name} profile photo`}
             fill

@@ -26,9 +26,9 @@ export function WalkerCard({
         featured && "ring-1 ring-accent/15 shadow-glow"
       )}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
         <WalkerAvatar name={walker.name} photoUrl={walker.headshotUrl} size="sm" />
-        <div className="flex flex-wrap justify-end gap-1.5">
+        <div className="flex max-w-[58%] flex-wrap justify-end gap-1.5 sm:max-w-none">
           {walker.listingTier !== "BASIC" && (
             <Badge variant="tier">{tierLabel}</Badge>
           )}
