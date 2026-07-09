@@ -24,6 +24,7 @@
     "mapbox:setup": "tsx scripts/mapbox-setup.ts",
     "deploy:check": "tsx scripts/deploy-check.ts",
     "vercel:env-sync": "tsx scripts/vercel-env-sync.ts",
+    "vercel:env-sync-keys": "tsx scripts/vercel-env-sync-keys.ts",
     "vercel:deploy": "tsx scripts/vercel-deploy.ts"
   },
   "dependencies": {
@@ -56,6 +57,7 @@
     "prisma": "^6.9.0",
     "tailwindcss": "^4.1.8",
     "tsx": "^4.19.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vercel": "^54.21.1"
   }
 }

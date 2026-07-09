@@ -1,5 +1,5 @@
 /**
- * Verifies Supabase Storage credentials and bucket access.
+ * Verifies Supabase Storage credentials and all PawPath buckets (including headshots).
  *
  * Usage:
  *   npx tsx scripts/supabase-storage-verify.ts
@@ -7,13 +7,40 @@
 
 import { config } from "dotenv";
 import {
+  ensureCredentialsBucket,
+  ensureProfilePhotosBucket,
   ensureVerificationBucket,
+  getCredentialsBucketName,
+  getProfilePhotosBucketName,
   getSupabaseAdmin,
   getVerificationBucketName,
   isSupabaseStorageConfigured,
 } from "../src/lib/supabase-storage";
 
 config({ path: ".env" });
+
+async function testBucketUpload(bucket: string, testPath: string) {
+  const supabase = getSupabaseAdmin();
+  const payload = new TextEncoder().encode("pawpath-storage-ok");
+
+  const { error: uploadError } = await supabase.storage
+    .from(bucket)
+    .upload(testPath, payload, { contentType: "text/plain", upsert: true });
+
+  if (uploadError) {
+    throw new Error(`Upload test failed (${bucket}): ${uploadError.message}`);
+  }
+
+  const { error: downloadError } = await supabase.storage
+    .from(bucket)
+    .download(testPath);
+
+  if (downloadError) {
+    throw new Error(`Download test failed (${bucket}): ${downloadError.message}`);
+  }
+
+  await supabase.storage.from(bucket).remove([testPath]);
+}
 
 async function main() {
   console.log("\nSupabase storage verification\n");
@@ -24,7 +51,6 @@ async function main() {
   }
 
   console.log(`URL: ${process.env.SUPABASE_URL}`);
-  console.log(`Bucket: ${getVerificationBucketName()}`);
 
   const supabase = getSupabaseAdmin();
   const { data: buckets, error: listError } = await supabase.storage.listBuckets();
@@ -35,32 +61,25 @@ async function main() {
 
   console.log(`Connected — ${buckets?.length ?? 0} bucket(s) visible`);
 
-  const bucket = await ensureVerificationBucket();
-  console.log(`Bucket ready: ${bucket}`);
+  const verificationBucket = await ensureVerificationBucket();
+  const profileBucket = await ensureProfilePhotosBucket();
+  const credentialsBucket = await ensureCredentialsBucket();
 
-  const testPath = `_healthcheck/${Date.now()}.txt`;
-  const payload = new TextEncoder().encode("pawpath-storage-ok");
+  console.log(`Verification bucket: ${verificationBucket} (${getVerificationBucketName()})`);
+  console.log(`Profile photos bucket: ${profileBucket} (${getProfilePhotosBucketName()})`);
+  console.log(`Credentials bucket: ${credentialsBucket} (${getCredentialsBucketName()})`);
 
-  const { error: uploadError } = await supabase.storage
-    .from(bucket)
-    .upload(testPath, payload, { contentType: "text/plain", upsert: true });
+  const stamp = Date.now();
+  await testBucketUpload(verificationBucket, `_healthcheck/${stamp}.txt`);
+  console.log("Verification bucket upload/download: ok");
 
-  if (uploadError) {
-    throw new Error(`Upload test failed: ${uploadError.message}`);
-  }
+  await testBucketUpload(profileBucket, `_healthcheck/${stamp}.txt`);
+  console.log("Profile photos bucket upload/download: ok");
 
-  const { error: downloadError } = await supabase.storage
-    .from(bucket)
-    .download(testPath);
+  await testBucketUpload(credentialsBucket, `_healthcheck/${stamp}.txt`);
+  console.log("Credentials bucket upload/download: ok");
 
-  if (downloadError) {
-    throw new Error(`Download test failed: ${downloadError.message}`);
-  }
-
-  await supabase.storage.from(bucket).remove([testPath]);
-
-  console.log("Upload/download test passed");
-  console.log("\nSupabase storage is ready for verification documents.\n");
+  console.log("\nSupabase storage is ready for walker onboarding uploads.\n");
 }
 
 main().catch((error) => {

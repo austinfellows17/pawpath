@@ -143,6 +143,19 @@ async function main() {
     process.exit(1);
   }
 
+  if (isSupabaseStorageConfigured()) {
+    try {
+      const { execFileSync } = await import("node:child_process");
+      execFileSync("npx", ["tsx", "scripts/supabase-storage-verify.ts"], {
+        stdio: "inherit",
+        env: process.env,
+      });
+    } catch {
+      console.error("Supabase storage verification failed.\n");
+      process.exit(1);
+    }
+  }
+
   console.log("Required checks passed.\n");
 }
 
