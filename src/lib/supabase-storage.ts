@@ -105,6 +105,13 @@ export function getProfilePhotoPublicUrl(storagePath: string) {
   return data.publicUrl;
 }
 
+export function storagePathFromPublicUrl(publicUrl: string) {
+  const marker = `/object/public/${PROFILE_PHOTOS_BUCKET}/`;
+  const idx = publicUrl.indexOf(marker);
+  if (idx === -1) return null;
+  return decodeURIComponent(publicUrl.slice(idx + marker.length));
+}
+
 export async function uploadProfilePhoto({
   userId,
   data,

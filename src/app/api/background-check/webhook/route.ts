@@ -1,11 +1,30 @@
 import { NextResponse } from "next/server";
 import { syncBackgroundCheckFromReport } from "@/lib/background-check";
+import { verifyCheckrWebhookSignature } from "@/lib/checkr";
 import { db } from "@/lib/db";
+import { captureException } from "@/lib/monitoring";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  const rawBody = await request.text();
+  const signature = request.headers.get("x-checkr-signature");
+
+  if (
+    !verifyCheckrWebhookSignature({
+      payload: rawBody,
+      signatureHeader: signature,
+    })
+  ) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = JSON.parse(rawBody) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
   const type = body?.type as string | undefined;
   const data = body?.data as Record<string, unknown> | undefined;
@@ -61,7 +80,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Checkr webhook error:", error);
+    await captureException(error, { source: "checkr-webhook", type });
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 }

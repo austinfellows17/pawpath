@@ -4,12 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { WALKER_SERVICES } from "@/lib/constants";
+import type { ListingTier } from "@prisma/client";
 import {
   WALKER_ONBOARDING_STEPS,
   MIN_ACCOUNT_AGE_HOURS,
   type WalkerOnboardingStep,
 } from "@/lib/walker-application";
 import { HeadshotPanel } from "@/components/onboarding/headshot-panel";
+import { ProfilePhotosPanel } from "@/components/onboarding/profile-photos-panel";
 import { VerificationPanel } from "@/components/onboarding/verification-panel";
 import { CredentialsPanel } from "@/components/onboarding/credentials-panel";
 import { CheckCircle2, Loader2 } from "lucide-react";
@@ -23,6 +25,8 @@ type WalkerProfile = {
   phone: string | null;
   services: string[];
   headshotUrl: string | null;
+  photoUrls: string[];
+  listingTier: ListingTier;
   verificationStatus: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
   listingReviewStatus: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
   listingReviewNotes: string | null;
@@ -64,6 +68,8 @@ export function WalkerOnboarding() {
   const [clientReferenceContact, setClientReferenceContact] = useState("");
   const [clientReferenceNotes, setClientReferenceNotes] = useState("");
   const [headshotUrl, setHeadshotUrl] = useState("");
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [listingTier, setListingTier] = useState<ListingTier>("BASIC");
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitEligibility, setSubmitEligibility] = useState<{
@@ -87,6 +93,8 @@ export function WalkerOnboarding() {
         setPhone(p.phone ?? "");
         setServices(p.services ?? []);
         setHeadshotUrl(p.headshotUrl ?? "");
+        setPhotoUrls(p.photoUrls ?? []);
+        setListingTier(p.listingTier ?? "BASIC");
         setClientReferenceName(p.clientReferenceName ?? "");
         setClientReferenceContact(p.clientReferenceContact ?? "");
         setClientReferenceNotes(p.clientReferenceNotes ?? "");
@@ -386,8 +394,17 @@ export function WalkerOnboarding() {
                 initialUrl={headshotUrl}
                 onUploaded={(url) => {
                   setHeadshotUrl(url);
+                  setPhotoUrls((current) =>
+                    current.length ? [url, ...current.filter((item) => item !== url)] : [url]
+                  );
                   void loadProfile();
                 }}
+              />
+              <ProfilePhotosPanel
+                headshotUrl={headshotUrl || null}
+                photoUrls={photoUrls}
+                listingTier={listingTier}
+                onChange={setPhotoUrls}
               />
               <div className="flex gap-3">
                 <Button

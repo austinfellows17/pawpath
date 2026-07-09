@@ -16,6 +16,7 @@ import { formatDistance, haversineDistanceMiles } from "@/lib/geo";
 import { LAUNCH_REGION } from "@/lib/constants";
 import { getSession } from "@/lib/session";
 import { ReportWalkerButton } from "@/components/walkers/report-walker-button";
+import { WalkerPhotoGallery } from "@/components/walkers/walker-photo-gallery";
 import { BackgroundCheckedBadge } from "@/components/walkers/background-checked-badge";
 import { MapPin, Star, CheckCircle2, Shield } from "lucide-react";
 
@@ -39,6 +40,12 @@ export default async function WalkerProfilePage({
   );
 
   const tierInfo = LISTING_TIERS[walker.listingTier];
+  const galleryPhotos =
+    walker.photoUrls.length > 0
+      ? walker.photoUrls
+      : walker.headshotUrl
+        ? [walker.headshotUrl]
+        : [];
 
   return (
     <>
@@ -99,6 +106,8 @@ export default async function WalkerProfilePage({
       </div>
 
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        <WalkerPhotoGallery photos={galleryPhotos} name={walker.name} />
+
         <div className="surface-card p-6 sm:p-8">
           <div className="grid gap-6 md:grid-cols-3">
             <div className="md:col-span-2">

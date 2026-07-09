@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
+
 const CHECKR_API_BASE =
   process.env.CHECKR_API_BASE?.trim() || "https://api.checkr.com/v1";
 
@@ -106,6 +108,53 @@ export async function createCheckrInvitation({
 
 export async function getCheckrReport(reportId: string) {
   return checkrRequest<CheckrReport>(`/reports/${reportId}`);
+}
+
+export function getCheckrWebhookSecret() {
+  return process.env.CHECKR_WEBHOOK_SECRET?.trim() ?? "";
+}
+
+export function isCheckrWebhookVerificationConfigured() {
+  return Boolean(getCheckrWebhookSecret());
+}
+
+export function verifyCheckrWebhookSignature({
+  payload,
+  signatureHeader,
+}: {
+  payload: string;
+  signatureHeader: string | null;
+}) {
+  const secret = getCheckrWebhookSecret();
+  if (!secret) {
+    return process.env.NODE_ENV !== "production";
+  }
+
+  if (!signatureHeader) return false;
+
+  const parts = signatureHeader.split(",").reduce<Record<string, string>>(
+    (acc, part) => {
+      const [key, value] = part.split("=");
+      if (key && value) acc[key.trim()] = value.trim();
+      return acc;
+    },
+    {}
+  );
+
+  const timestamp = parts.t;
+  const signature = parts.v1;
+  if (!timestamp || !signature) return false;
+
+  const signedPayload = `${timestamp}.${payload}`;
+  const expected = createHmac("sha256", secret)
+    .update(signedPayload)
+    .digest("hex");
+
+  try {
+    return timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  } catch {
+    return false;
+  }
 }
 
 export function mapCheckrResultToStatus(result: string | null): {

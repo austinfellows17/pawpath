@@ -9,6 +9,7 @@
 import { config } from "dotenv";
 import { isGoogleAuthConfigured } from "../src/lib/google-auth";
 import { isMapboxConfigured, verifyMapboxToken } from "../src/lib/mapbox";
+import { isCheckrWebhookVerificationConfigured } from "../src/lib/checkr";
 import {
   isEmailConfigured,
   isSmsConfigured,
@@ -92,7 +93,16 @@ async function main() {
     {
       name: "Mapbox map",
       ok: isMapboxConfigured(),
-      required: false,
+      required: isProduction,
+      note: isProduction
+        ? "Required for launch-quality /find map view"
+        : undefined,
+    },
+    {
+      name: "Checkr webhook secret",
+      ok: isCheckrWebhookVerificationConfigured(),
+      required: isProduction && Boolean(process.env.CHECKR_API_KEY?.trim()),
+      note: "Set CHECKR_WEBHOOK_SECRET from Checkr dashboard webhook settings",
     },
     {
       name: "Twilio SMS",

@@ -23,6 +23,7 @@ async function main() {
     console.log("Add to .env:\n");
     console.log('CHECKR_API_KEY="your_checkr_api_key"');
     console.log(`CHECKR_PACKAGE_SLUG="${packageSlug}"`);
+    console.log('CHECKR_WEBHOOK_SECRET="your_webhook_signing_secret"');
     console.log("# Optional staging:");
     console.log('# CHECKR_API_BASE="https://api.checkr-staging.com/v1"');
     console.log("\nSteps:");
@@ -49,6 +50,7 @@ async function main() {
   console.log("Checkr API key verified.");
   console.log(`Package slug: ${packageSlug}`);
   console.log(`Webhook URL: ${webhookUrl}`);
+  console.log("Webhook secret: copy CHECKR_WEBHOOK_SECRET from Checkr dashboard → Webhooks");
   console.log("\nPaid tier upgrades will automatically invite walkers to background screening.\n");
 }
 

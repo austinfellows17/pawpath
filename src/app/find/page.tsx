@@ -144,7 +144,7 @@ export default function FindWalkersPage() {
             <Loader2 className="h-8 w-8 animate-spin text-trail-600" />
           </div>
         ) : view === "map" ? (
-          <WalkerMap walkers={walkers} center={center} />
+          <WalkerMap walkers={walkers} center={center} radiusMiles={radius} />
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {walkers.map((walker) => (

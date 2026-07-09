@@ -396,9 +396,13 @@ export async function getAdminUsers({
         name: true,
         email: true,
         role: true,
+        isSuspended: true,
+        suspendedAt: true,
+        suspensionReason: true,
         createdAt: true,
         walkerProfile: {
           select: {
+            id: true,
             listingTier: true,
             listingReviewStatus: true,
             isActive: true,
@@ -423,9 +427,48 @@ export async function getAdminUsers({
       name: user.name,
       email: user.email,
       role: user.role,
+      isSuspended: user.isSuspended,
+      suspendedAt: user.suspendedAt?.toISOString() ?? null,
+      suspensionReason: user.suspensionReason,
       createdAt: user.createdAt.toISOString(),
       walkerProfile: user.walkerProfile,
       ownerProfile: user.ownerProfile,
+    })),
+  };
+}
+
+export async function getAdminAuditLog({
+  limit = 50,
+  offset = 0,
+}: {
+  limit?: number;
+  offset?: number;
+}) {
+  const [actions, total] = await Promise.all([
+    db.adminAction.findMany({
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+      include: {
+        admin: { select: { name: true, email: true } },
+      },
+    }),
+    db.adminAction.count(),
+  ]);
+
+  return {
+    total,
+    actions: actions.map((action) => ({
+      id: action.id,
+      action: action.action,
+      targetType: action.targetType,
+      targetId: action.targetId,
+      notes: action.notes,
+      createdAt: action.createdAt.toISOString(),
+      admin: {
+        name: action.admin.name,
+        email: action.admin.email,
+      },
     })),
   };
 }

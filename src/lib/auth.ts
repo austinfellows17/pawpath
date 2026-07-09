@@ -30,6 +30,8 @@ function buildProviders() {
 
         if (!user?.passwordHash) return null;
 
+        if (user.isSuspended) return null;
+
         const valid = await bcrypt.compare(
           credentials.password,
           user.passwordHash
@@ -69,6 +71,17 @@ export const authOptions: NextAuthOptions = {
   providers: buildProviders(),
   callbacks: {
     async signIn({ user, account }) {
+      if (user.id) {
+        const dbUser = await db.user.findUnique({
+          where: { id: user.id },
+          select: { isSuspended: true },
+        });
+
+        if (dbUser?.isSuspended) {
+          return "/login?error=AccountSuspended";
+        }
+      }
+
       if (account?.provider !== "google" || !user.id) return true;
 
       const cookieStore = await cookies();

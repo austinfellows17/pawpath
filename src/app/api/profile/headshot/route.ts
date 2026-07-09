@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { ListingReviewStatus } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
@@ -8,14 +9,12 @@ import {
   deleteProfilePhoto,
 } from "@/lib/supabase-storage";
 import { triggerListingReReview } from "@/lib/listing-review";
-import { ListingReviewStatus } from "@prisma/client";
-
-const MAX_HEADSHOT_BYTES = 2 * 1024 * 1024;
-const ALLOWED_HEADSHOT_MIME_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-];
+import {
+  ALLOWED_PHOTO_MIME_TYPES,
+  MAX_PHOTO_BYTES,
+  buildPhotoUrls,
+  getGalleryUrls,
+} from "@/lib/profile-photos";
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -34,10 +33,13 @@ export async function POST(request: Request) {
     where: { userId: session.user.id },
     select: {
       id: true,
+      headshotUrl: true,
       headshotStoragePath: true,
-      lastApprovedHeadshotUrl: true,
+      photoUrls: true,
+      listingTier: true,
       listingReviewStatus: true,
       isActive: true,
+      lastApprovedHeadshotUrl: true,
     },
   });
 
@@ -55,14 +57,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Choose a photo first" }, { status: 400 });
   }
 
-  if (!ALLOWED_HEADSHOT_MIME_TYPES.includes(file.type)) {
+  if (!ALLOWED_PHOTO_MIME_TYPES.includes(file.type as (typeof ALLOWED_PHOTO_MIME_TYPES)[number])) {
     return NextResponse.json(
       { error: "Use a JPEG, PNG, or WebP image" },
       { status: 400 }
     );
   }
 
-  if (file.size > MAX_HEADSHOT_BYTES) {
+  if (file.size > MAX_PHOTO_BYTES) {
     return NextResponse.json(
       { error: "Photo must be 2MB or smaller" },
       { status: 400 }
@@ -78,12 +80,14 @@ export async function POST(request: Request) {
       fileName: file.name,
     });
 
+    const galleryUrls = getGalleryUrls(profile.photoUrls, profile.headshotUrl);
+
     await db.walkerProfile.update({
       where: { userId: session.user.id },
       data: {
         headshotUrl: publicUrl,
         headshotStoragePath: storagePath,
-        photoUrls: [publicUrl],
+        photoUrls: buildPhotoUrls(publicUrl, galleryUrls),
       },
     });
 

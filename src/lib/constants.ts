@@ -79,6 +79,17 @@ export const LISTING_TIERS: Record<
   },
 };
 
+/** Max profile photos (including headshot) per listing tier */
+export const PHOTO_LIMIT_BY_TIER: Record<ListingTier, number> = {
+  BASIC: 1,
+  STANDARD: 6,
+  FEATURED: 12,
+};
+
+export function getPhotoLimitForTier(tier: ListingTier) {
+  return PHOTO_LIMIT_BY_TIER[tier];
+}
+
 export const PAID_LISTING_TIERS = ["STANDARD", "FEATURED"] as const;
 export type PaidListingTier = (typeof PAID_LISTING_TIERS)[number];
 
