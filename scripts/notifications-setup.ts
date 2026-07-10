@@ -20,9 +20,9 @@ console.log("1. Create an account at https://resend.com");
 console.log("2. Add an API key and verified sender domain");
 console.log("3. Set in .env:");
 console.log('   RESEND_API_KEY="re_..."');
-console.log('   EMAIL_FROM="PawPath <notifications@yourdomain.com>"');
+console.log('   EMAIL_FROM="PawPath <hello@usepawpath.io>"');
 console.log(
-  "   For local dev you can use onboarding@resend.dev as the sender.\n"
+  "   Verify your domain DNS in Resend before sending to beta testers.\n"
 );
 
 console.log("SMS (Twilio):");
