@@ -10,8 +10,11 @@
     "db:generate": "prisma generate",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "demo:remove": "tsx scripts/remove-demo-accounts.ts",
     "stripe:webhook-setup": "tsx scripts/stripe-webhook-setup.ts",
     "stripe:bg-addon-setup": "tsx scripts/stripe-bg-addon-setup.ts",
     "stripe:listen": "tsx scripts/stripe-listen.ts",
@@ -23,6 +26,7 @@
     "notifications:verify": "tsx scripts/notifications-verify.ts",
     "images:refresh": "tsx scripts/refresh-site-images.ts",
     "deploy:check": "tsx scripts/deploy-check.ts",
+    "test:e2e": "playwright test",
     "vercel:env-sync": "tsx scripts/vercel-env-sync.ts",
     "vercel:env-sync-keys": "tsx scripts/vercel-env-sync-keys.ts",
     "vercel:deploy": "tsx scripts/vercel-deploy.ts"
@@ -47,6 +51,7 @@
     "zod": "^3.25.51"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.1.8",
     "@types/bcryptjs": "^2.4.6",
     "@types/mapbox-gl": "^3.4.1",

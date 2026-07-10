@@ -87,7 +87,12 @@ export async function searchWalkers({
       );
       return toWalkerListing(profile, distanceMiles);
     })
-    .filter((walker) => (walker.distanceMiles ?? 0) <= radiusMiles)
+    .filter((walker) => {
+      const distance = walker.distanceMiles ?? 0;
+      const withinSearchRadius = distance <= radiusMiles;
+      const withinWalkerRadius = distance <= walker.serviceRadiusMiles;
+      return withinSearchRadius && withinWalkerRadius;
+    })
     .sort(sortWalkers);
 
   return {

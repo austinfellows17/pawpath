@@ -1,6 +1,14 @@
 import { BETA_NOTICE } from "@/lib/constants";
 
+export function isBetaBannerEnabled() {
+  return process.env.NEXT_PUBLIC_SHOW_BETA_BANNER?.trim() !== "false";
+}
+
 export function BetaBanner() {
+  if (!isBetaBannerEnabled()) {
+    return null;
+  }
+
   return (
     <div
       className="border-b border-trail-200/50 bg-trail-50/90"

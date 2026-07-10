@@ -8,6 +8,7 @@ declare module "next-auth" {
       name?: string | null;
       image?: string | null;
       role: "OWNER" | "WALKER" | "ADMIN";
+      emailVerified?: boolean;
     };
   }
 
@@ -20,5 +21,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     role?: "OWNER" | "WALKER" | "ADMIN";
+    emailVerified?: boolean;
   }
 }

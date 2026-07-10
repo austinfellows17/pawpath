@@ -8,6 +8,7 @@
 
 import { config } from "dotenv";
 import { isGoogleAuthConfigured } from "../src/lib/google-auth";
+import { isEmailVerificationRequired } from "../src/lib/email-verification";
 import { isMapboxConfigured, verifyMapboxToken } from "../src/lib/mapbox";
 import { isCheckrWebhookVerificationConfigured } from "../src/lib/checkr";
 import {
@@ -84,6 +85,14 @@ async function main() {
       name: "Resend email",
       ok: isEmailConfigured(),
       required: true,
+    },
+    {
+      name: "Email verification enabled",
+      ok: !isEmailVerificationRequired() || isEmailConfigured(),
+      required: true,
+      note: isEmailVerificationRequired()
+        ? "REQUIRE_EMAIL_VERIFICATION=true requires Resend"
+        : undefined,
     },
     {
       name: "Google sign-in",

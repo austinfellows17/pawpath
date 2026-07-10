@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { resetPasswordWithToken } from "@/lib/password-reset";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
   email: z.string().email(),
@@ -9,6 +10,9 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "reset-password", 10, 60 * 60 * 1000);
+  if (limited) return limited;
+
   const body = await request.json();
   const parsed = schema.safeParse(body);
 

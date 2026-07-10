@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/lib/session";
 import { needsOnboarding, getWalkerDashboardStatus } from "@/lib/onboarding";
+import { EmailVerificationBanner } from "@/components/auth/email-verification-banner";
 import { Clock, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -40,6 +41,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        <EmailVerificationBanner />
         {walkerStatus?.listingReviewStatus === "PENDING" && (
           <div className="mb-6 flex gap-3 rounded-2xl border border-sand-300 bg-sand-100 p-5">
             <Clock className="mt-0.5 h-5 w-5 shrink-0 text-trail-700" />

@@ -46,6 +46,10 @@ export const walkerListingSchema = z
         (value) => value.replace(/\D/g, "").length >= 10,
         "Enter a valid phone number"
       ),
+    serviceRadiusMiles: z
+      .number()
+      .min(1, "Service radius must be at least 1 mile")
+      .max(25, "Service radius cannot exceed 25 miles"),
   })
   .merge(walkerReferenceSchema);
 
@@ -74,6 +78,7 @@ export function hasCompleteListing(
     | "rate60Min"
     | "services"
     | "phone"
+    | "serviceRadiusMiles"
   >
 ) {
   return walkerListingSchema.safeParse({
@@ -84,6 +89,7 @@ export function hasCompleteListing(
     rate60Min: profile.rate60Min ?? "",
     services: profile.services,
     phone: profile.phone ?? "",
+    serviceRadiusMiles: profile.serviceRadiusMiles ?? 5,
   }).success;
 }
 

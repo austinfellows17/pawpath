@@ -6,6 +6,7 @@ import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
+import { ResendVerificationForm } from "@/components/auth/resend-verification-form";
 import { DisclaimerBanner } from "@/components/legal/disclaimer-banner";
 import { LIABILITY_DISCLAIMER } from "@/lib/constants";
 
@@ -20,6 +21,7 @@ function SignupForm() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verifyEmailNotice, setVerifyEmailNotice] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,6 +42,13 @@ function SignupForm() {
     if (!res.ok) {
       const data = await res.json();
       setError(data.error ?? "Something went wrong");
+      setLoading(false);
+      return;
+    }
+
+    const data = await res.json();
+    if (data.verifyEmail) {
+      setVerifyEmailNotice(true);
       setLoading(false);
       return;
     }
@@ -66,11 +75,31 @@ function SignupForm() {
           <p className="section-label">Get started</p>
           <h1 className="headline-lg mt-2">Join PawPath</h1>
           <p className="mt-3 text-sand-600">
-            {role === "WALKER"
-              ? "Create your walker listing."
-              : "Find trusted local walkers near your dog."}
+            {verifyEmailNotice
+              ? "Check your inbox to verify your email, then sign in."
+              : role === "WALKER"
+                ? "Create your walker listing."
+                : "Find trusted local walkers near your dog."}
           </p>
 
+          {verifyEmailNotice ? (
+            <div className="mt-8 space-y-4 rounded-2xl border border-trail-200 bg-trail-50 p-5">
+              <p className="text-sm text-trail-800">
+                We sent a verification link to{" "}
+                <span className="font-medium">{email}</span>. Click the link in
+                that email, then sign in to continue.
+              </p>
+              <p className="text-xs text-trail-700">
+                Check your spam folder if it doesn&apos;t arrive within a few
+                minutes.
+              </p>
+              <ResendVerificationForm email={email} />
+              <Button href={`/login?email=${encodeURIComponent(email)}`} className="w-full">
+                Go to sign in
+              </Button>
+            </div>
+          ) : (
+            <>
           <div className="mt-6 flex rounded-xl border border-sand-200/80 bg-sand-100/80 p-1">
         <button
           type="button"
@@ -196,6 +225,8 @@ function SignupForm() {
           Log in
         </Link>
       </p>
+            </>
+          )}
         </div>
       </div>
     </div>

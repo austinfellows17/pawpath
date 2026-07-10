@@ -50,7 +50,7 @@ jobs:
           STRIPE_PRICE_BACKGROUND_CHECK: ${{ secrets.STRIPE_PRICE_BACKGROUND_CHECK }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Supabase storage smoke test
         run: npm run storage:verify
@@ -60,4 +60,15 @@ jobs:
           SUPABASE_VERIFICATION_BUCKET: verification-documents
           SUPABASE_PROFILE_PHOTOS_BUCKET: profile-photos
           SUPABASE_CREDENTIALS_BUCKET: walker-credentials
-        continue-on-error: true
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: E2E smoke tests
+        run: npm run test:e2e
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+          NEXTAUTH_SECRET: ci-build-secret
+          NEXTAUTH_URL: http://127.0.0.1:3000

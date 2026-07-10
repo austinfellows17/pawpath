@@ -1,11 +1,40 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { PawPathLogo } from "@/components/layout/pawpath-logo";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+
+function UnreadMessagesBadge() {
+  const { data: session } = useSession();
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const load = () => {
+      void fetch("/api/messages/unread-count")
+        .then((response) => (response.ok ? response.json() : null))
+        .then((data) => {
+          if (data) setCount(data.count);
+        });
+    };
+
+    load();
+    const interval = setInterval(load, 30_000);
+    return () => clearInterval(interval);
+  }, [session?.user]);
+
+  if (!count) return null;
+
+  return (
+    <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-semibold text-white">
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}
 
 export function Header() {
   const { data: session } = useSession();
@@ -37,6 +66,10 @@ export function Header() {
         <div className="hidden items-center gap-2 md:flex">
           {session ? (
             <>
+              <Button href="/messages" variant="ghost" size="sm">
+                Messages
+                <UnreadMessagesBadge />
+              </Button>
               <Button href="/dashboard" variant="ghost" size="sm">
                 Dashboard
               </Button>
@@ -81,6 +114,14 @@ export function Header() {
             <hr className="my-3 border-sand-200/80" />
             {session ? (
               <>
+                <Link
+                  href="/messages"
+                  className="rounded-xl px-3 py-2.5 text-sm font-medium"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Messages
+                  <UnreadMessagesBadge />
+                </Link>
                 <Link
                   href="/dashboard"
                   className="rounded-xl px-3 py-2.5 text-sm font-medium"

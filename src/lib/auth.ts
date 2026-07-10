@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
+import { isEmailVerificationRequired } from "@/lib/email-verification";
 import type { SessionUser } from "@/lib/constants";
 import {
   OAUTH_SIGNUP_ROLE_COOKIE,
@@ -74,11 +75,19 @@ export const authOptions: NextAuthOptions = {
       if (user.id) {
         const dbUser = await db.user.findUnique({
           where: { id: user.id },
-          select: { isSuspended: true },
+          select: { isSuspended: true, emailVerified: true },
         });
 
         if (dbUser?.isSuspended) {
           return "/login?error=AccountSuspended";
+        }
+
+        if (
+          account?.provider === "credentials" &&
+          isEmailVerificationRequired() &&
+          !dbUser?.emailVerified
+        ) {
+          return "/login?error=EmailNotVerified";
         }
       }
 
@@ -96,18 +105,21 @@ export const authOptions: NextAuthOptions = {
         select: { termsAcceptedAt: true },
       });
 
-      if (!dbUser?.termsAcceptedAt) {
-        const role =
-          signupRole === "WALKER" ? UserRole.WALKER : UserRole.OWNER;
+      const role =
+        signupRole === "WALKER" ? UserRole.WALKER : UserRole.OWNER;
 
-        await db.user.update({
-          where: { id: user.id },
-          data: {
-            role,
-            termsAcceptedAt: termsAccepted ? new Date() : null,
-          },
-        });
-      }
+      await db.user.update({
+        where: { id: user.id },
+        data: {
+          ...(!dbUser?.termsAcceptedAt
+            ? {
+                role,
+                termsAcceptedAt: termsAccepted ? new Date() : null,
+              }
+            : {}),
+          emailVerified: new Date(),
+        },
+      });
 
       return true;
     },
@@ -119,11 +131,12 @@ export const authOptions: NextAuthOptions = {
       if (user?.id || account?.provider === "google") {
         const dbUser = await db.user.findUnique({
           where: { id: (user?.id ?? token.id) as string },
-          select: { role: true },
+          select: { role: true, emailVerified: true },
         });
 
         if (dbUser) {
           token.role = dbUser.role;
+          token.emailVerified = Boolean(dbUser.emailVerified);
         }
       } else if (user) {
         token.role = (user as SessionUser).role ?? UserRole.OWNER;
@@ -139,6 +152,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as SessionUser["role"];
+        session.user.emailVerified = Boolean(token.emailVerified);
       }
       return session;
     },

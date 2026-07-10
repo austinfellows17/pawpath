@@ -4,6 +4,7 @@ import { ProfileReportReason } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { submitProfileReport } from "@/lib/profile-reports";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const reportSchema = z.object({
   reason: z.nativeEnum(ProfileReportReason),
@@ -14,6 +15,9 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const limited = enforceRateLimit(request, "profile-report", 5, 60 * 60 * 1000);
+  if (limited) return limited;
+
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "OWNER") {
     return NextResponse.json(

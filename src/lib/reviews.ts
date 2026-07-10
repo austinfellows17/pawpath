@@ -1,5 +1,7 @@
 import { ReviewStatus, UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
+import { appUrl } from "@/lib/app-url";
+import { queueNotification } from "@/lib/notifications";
 import { requireAdmin } from "@/lib/verification";
 
 export { requireAdmin };
@@ -266,9 +268,21 @@ export async function moderateReview({
   const status =
     action === "approve" ? ReviewStatus.APPROVED : ReviewStatus.REJECTED;
 
+  const existing = await db.review.findUnique({
+    where: { id: reviewId, status: ReviewStatus.PENDING },
+    include: {
+      author: { select: { id: true, name: true } },
+      walkerProfile: { include: { user: { select: { name: true } } } },
+    },
+  });
+
+  if (!existing) {
+    throw new Error("Review not found");
+  }
+
   const [review] = await db.$transaction([
     db.review.update({
-      where: { id: reviewId, status: ReviewStatus.PENDING },
+      where: { id: reviewId },
       data: { status },
     }),
     db.adminAction.create({
@@ -282,6 +296,23 @@ export async function moderateReview({
       },
     }),
   ]);
+
+  const walkerName = existing.walkerProfile.user.name ?? "your walker";
+  queueNotification({
+    userId: existing.authorId,
+    subject:
+      action === "approve"
+        ? "Your PawPath review was published"
+        : "Your PawPath review was not published",
+    emailBody:
+      action === "approve"
+        ? `Your review of ${walkerName} is now live on their profile.\n\nView walkers: ${appUrl("/find")}`
+        : `Your review of ${walkerName} was not published.${notes ? `\n\nNote from our team: ${notes}` : ""}\n\nYou can submit an updated review from your messages if you've continued working with this walker.`,
+    smsBody:
+      action === "approve"
+        ? `PawPath: Your review of ${walkerName} is now live.`
+        : `PawPath: Your review of ${walkerName} was not published.`,
+  });
 
   return review;
 }

@@ -18,6 +18,7 @@ export type ConversationSummary = {
   } | null;
   contactRevealed: boolean;
   updatedAt: string;
+  unreadCount: number;
 };
 
 export type ConversationDetail = ConversationSummary & {
@@ -61,28 +62,100 @@ export async function getConversationsForUser(
     orderBy: { updatedAt: "desc" },
   });
 
-  return conversations.map((conversation) => {
-    const isOwner = conversation.ownerId === userId;
-    const otherUser = isOwner ? conversation.walker : conversation.owner;
-    const last = conversation.messages[0];
+  return Promise.all(
+    conversations.map(async (conversation) => {
+      const isOwner = conversation.ownerId === userId;
+      const otherUser = isOwner ? conversation.walker : conversation.owner;
+      const last = conversation.messages[0];
+      const lastReadAt = isOwner
+        ? conversation.ownerLastReadAt
+        : conversation.walkerLastReadAt;
 
-    return {
-      id: conversation.id,
-      otherUser: {
-        id: otherUser.id,
-        name: otherUser.name,
-        role: otherUser.role as "OWNER" | "WALKER",
+      const unreadCount = await db.message.count({
+        where: {
+          conversationId: conversation.id,
+          NOT: { senderId: userId },
+          ...(lastReadAt ? { createdAt: { gt: lastReadAt } } : {}),
+        },
+      });
+
+      return {
+        id: conversation.id,
+        otherUser: {
+          id: otherUser.id,
+          name: otherUser.name,
+          role: otherUser.role as "OWNER" | "WALKER",
+        },
+        lastMessage: last
+          ? {
+              body: last.body,
+              createdAt: last.createdAt.toISOString(),
+              isFromMe: last.senderId === userId,
+            }
+          : null,
+        contactRevealed: conversation.contactRevealed,
+        updatedAt: conversation.updatedAt.toISOString(),
+        unreadCount,
+      };
+    })
+  );
+}
+
+export async function getUnreadMessageCount(userId: string) {
+  const conversations = await db.conversation.findMany({
+    where: {
+      OR: [{ ownerId: userId }, { walkerUserId: userId }],
+    },
+    select: {
+      ownerId: true,
+      ownerLastReadAt: true,
+      walkerLastReadAt: true,
+      messages: {
+        where: { NOT: { senderId: userId } },
+        select: { createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 1,
       },
-      lastMessage: last
-        ? {
-            body: last.body,
-            createdAt: last.createdAt.toISOString(),
-            isFromMe: last.senderId === userId,
-          }
-        : null,
-      contactRevealed: conversation.contactRevealed,
-      updatedAt: conversation.updatedAt.toISOString(),
-    };
+    },
+  });
+
+  let total = 0;
+  for (const conversation of conversations) {
+    const isOwner = conversation.ownerId === userId;
+    const lastReadAt = isOwner
+      ? conversation.ownerLastReadAt
+      : conversation.walkerLastReadAt;
+    const latestFromOther = conversation.messages[0];
+    if (!latestFromOther) continue;
+    if (!lastReadAt || latestFromOther.createdAt > lastReadAt) {
+      total += 1;
+    }
+  }
+  return total;
+}
+
+export async function markConversationRead(
+  conversationId: string,
+  userId: string
+) {
+  const conversation = await db.conversation.findFirst({
+    where: {
+      id: conversationId,
+      OR: [{ ownerId: userId }, { walkerUserId: userId }],
+    },
+    select: { id: true, ownerId: true },
+  });
+
+  if (!conversation) return;
+
+  const now = new Date();
+  const isOwner = conversation.ownerId === userId;
+
+  await db.conversation.update({
+    where: { id: conversationId },
+    data: isOwner
+      ? { ownerLastReadAt: now }
+      : { walkerLastReadAt: now },
   });
 }
 
@@ -115,6 +188,8 @@ export async function getConversationDetail(
 
   if (!conversation) return null;
 
+  await markConversationRead(conversationId, userId);
+
   const isOwner = conversation.ownerId === userId;
   const otherUser = isOwner ? conversation.walker : conversation.owner;
 
@@ -139,6 +214,7 @@ export async function getConversationDetail(
       : null,
     contactRevealed: conversation.contactRevealed,
     updatedAt: conversation.updatedAt.toISOString(),
+    unreadCount: 0,
     messages: conversation.messages.map((message) => ({
       id: message.id,
       body: message.body,

@@ -28,6 +28,10 @@ export function MessageThread({ conversationId }: { conversationId: string }) {
 
   useEffect(() => {
     load();
+    const interval = setInterval(() => {
+      void load();
+    }, 15_000);
+    return () => clearInterval(interval);
   }, [load]);
 
   async function handleSend(e: React.FormEvent) {

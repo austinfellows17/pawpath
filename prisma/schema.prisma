@@ -279,6 +279,8 @@ model Conversation {
   ownerId         String
   walkerUserId    String
   contactRevealed Boolean  @default(false)
+  ownerLastReadAt  DateTime?
+  walkerLastReadAt DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

@@ -132,6 +132,7 @@ export type SessionUser = {
   name?: string | null;
   role: UserRole;
   image?: string | null;
+  emailVerified?: boolean;
 };
 
 export const EXTENDED_WALK_PRICING_NOTE =

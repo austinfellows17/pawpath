@@ -106,6 +106,26 @@ async function sendEmail(to: string, subject: string, text: string) {
   return true;
 }
 
+/** Always sends — used for verification, password reset, etc. */
+export async function sendTransactionalEmail({
+  to,
+  subject,
+  text,
+}: {
+  to: string;
+  subject: string;
+  text: string;
+}) {
+  if (!isEmailConfigured()) {
+    throw new Error("Email delivery is not configured");
+  }
+
+  const sent = await sendEmail(to, subject, text);
+  if (!sent) {
+    throw new Error("Failed to send email");
+  }
+}
+
 async function sendSms(to: string, body: string) {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;

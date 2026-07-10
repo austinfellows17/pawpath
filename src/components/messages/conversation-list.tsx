@@ -20,6 +20,8 @@ export function ConversationList({ embedded = false }: { embedded?: boolean }) {
 
   useEffect(() => {
     load();
+    const interval = setInterval(load, 30_000);
+    return () => clearInterval(interval);
   }, [load]);
 
   if (loading) {
@@ -60,6 +62,11 @@ export function ConversationList({ embedded = false }: { embedded?: boolean }) {
             <div>
               <p className="font-medium text-trail-900">
                 {conversation.otherUser.name ?? "PawPath user"}
+                {conversation.unreadCount > 0 && (
+                  <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-semibold text-white">
+                    {conversation.unreadCount}
+                  </span>
+                )}
               </p>
               <p className="text-xs text-sand-500">
                 {conversation.otherUser.role === "WALKER"

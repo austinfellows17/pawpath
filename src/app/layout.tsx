@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/header";
 import { BetaBanner } from "@/components/layout/beta-banner";
 import { Footer } from "@/components/layout/footer";
 import { Providers } from "@/components/providers";
+import { getAppBaseUrl } from "@/lib/app-url";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -17,12 +18,27 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getAppBaseUrl()),
   title: {
     default: "PawPath — Local dog walkers near you",
     template: "%s | PawPath",
   },
   description:
     "Connect with trusted local dog walkers near you. No booking fees, no middleman. Find your neighbor, message directly, pay offline.",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "PawPath",
+    title: "PawPath — Local dog walkers near you",
+    description:
+      "Connect with trusted local dog walkers near you. No booking fees, no middleman.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PawPath — Local dog walkers near you",
+    description:
+      "Connect with trusted local dog walkers near you. No booking fees, no middleman.",
+  },
   icons: {
     icon: "/favicon.svg",
     apple: "/favicon.svg",

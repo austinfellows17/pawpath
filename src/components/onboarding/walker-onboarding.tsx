@@ -23,6 +23,7 @@ type WalkerProfile = {
   rate30Min: string | null;
   rate60Min: string | null;
   phone: string | null;
+  serviceRadiusMiles: number;
   services: string[];
   headshotUrl: string | null;
   photoUrls: string[];
@@ -63,6 +64,7 @@ export function WalkerOnboarding() {
   const [rate30Min, setRate30Min] = useState("");
   const [rate60Min, setRate60Min] = useState("");
   const [phone, setPhone] = useState("");
+  const [serviceRadiusMiles, setServiceRadiusMiles] = useState(5);
   const [services, setServices] = useState<string[]>([]);
   const [clientReferenceName, setClientReferenceName] = useState("");
   const [clientReferenceContact, setClientReferenceContact] = useState("");
@@ -91,6 +93,7 @@ export function WalkerOnboarding() {
         setRate30Min(p.rate30Min ?? "");
         setRate60Min(p.rate60Min ?? "");
         setPhone(p.phone ?? "");
+        setServiceRadiusMiles(p.serviceRadiusMiles ?? 5);
         setServices(p.services ?? []);
         setHeadshotUrl(p.headshotUrl ?? "");
         setPhotoUrls(p.photoUrls ?? []);
@@ -150,6 +153,7 @@ export function WalkerOnboarding() {
         rate30Min,
         rate60Min,
         phone,
+        serviceRadiusMiles,
         services,
         clientReferenceName: clientReferenceName || undefined,
         clientReferenceContact: clientReferenceContact || undefined,
@@ -324,6 +328,28 @@ export function WalkerOnboarding() {
                 />
                 <p className="mt-1 text-xs text-sand-500">
                   Shared with owners only after they message you.
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-trail-800">
+                  Service radius <span className="text-red-500">*</span>
+                </label>
+                <input
+                  required
+                  type="number"
+                  min={1}
+                  max={25}
+                  value={serviceRadiusMiles}
+                  onChange={(e) =>
+                    setServiceRadiusMiles(
+                      Math.min(25, Math.max(1, Number(e.target.value) || 1))
+                    )
+                  }
+                  className="mt-1 w-full rounded-xl border border-sand-300 px-4 py-2.5 focus:border-trail-500 focus:outline-none focus:ring-2 focus:ring-trail-200"
+                />
+                <p className="mt-1 text-xs text-sand-500">
+                  How far you&apos;re willing to travel from your zip code (miles).
+                  Owners outside this radius won&apos;t see you in search.
                 </p>
               </div>
               <div>

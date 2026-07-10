@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import {
   getConversationDetail,
+  markConversationRead,
   requireAuthUser,
   sendMessage,
 } from "@/lib/messages";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 
 export async function GET(
@@ -33,6 +35,9 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const limited = enforceRateLimit(request, "send-message", 30, 60 * 1000);
+  if (limited) return limited;
+
   try {
     const user = await requireAuthUser();
     const { id } = await params;
