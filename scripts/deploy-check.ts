@@ -149,12 +149,13 @@ async function main() {
   }
 
   console.log("\nProduction reminders:");
+  console.log("- App URL: https://usepawpath.io (NEXTAUTH_URL)");
   console.log("- Vercel env vars for all required items above");
-  console.log("- Stripe webhook: https://YOUR_DOMAIN/api/billing/webhook");
+  console.log("- Stripe webhook: https://usepawpath.io/api/billing/webhook");
   console.log(
-    "- Google OAuth redirect: https://YOUR_DOMAIN/api/auth/callback/google"
+    "- Google OAuth redirect: https://usepawpath.io/api/auth/callback/google"
   );
-  console.log("- Resend: verify your domain and update EMAIL_FROM");
+  console.log("- Resend sender: PawPath <hello@usepawpath.io>");
   console.log("- Run: npm run build\n");
 
   if (failedRequired > 0) {

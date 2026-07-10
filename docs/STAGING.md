@@ -21,7 +21,7 @@ Use a separate Supabase project and Vercel preview deployment for staging so pro
 
 | Variable | Staging value |
 |----------|---------------|
-| `NEXTAUTH_URL` | Your Vercel preview URL |
+| `NEXTAUTH_URL` | `https://usepawpath.io` |
 | `NEXT_PUBLIC_SHOW_BETA_BANNER` | `true` |
 | `REQUIRE_EMAIL_VERIFICATION` | `true` (recommended for beta) |
 | `SENTRY_DSN` | Optional separate Sentry project |
